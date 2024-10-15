@@ -1,4 +1,4 @@
-<!-- This is the homepage. -->
+<!-- This is the page that tell users how to use the website. -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -6,12 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="img/logo-icon.png"> 
-    <title>BetterTierListMaker - Home</title>
+    <title>BetterTierListMaker - Guide</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script> 
         $(function(){
           $("#navbar").load("components/navbar.html", function() {
-              const element = document.getElementById("home");
+              const element = document.getElementById("guide");
               if (element) {
                   element.classList.add("active");
               }
@@ -23,8 +23,8 @@
 <body class="bg-secondary">
     <div id="navbar"></div>
     
-    <div class="bg-white text-black text-center p-1">
-        <h2>Welcome to BetterTierListMaker!</h2>
+    <div class="bg-white text-black p-1 pl-5">
+        <h2>How it Works</h2>
    </div>
 
 </body>

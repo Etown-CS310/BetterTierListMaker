@@ -1,4 +1,4 @@
-<!-- This is the homepage. -->
+<!-- This is the page that shows users lists that they have made and own. -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -6,26 +6,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="img/logo-icon.png"> 
-    <title>BetterTierListMaker - Home</title>
+    <title>BetterTierListMaker - Your Tier Lists</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script> 
         $(function(){
           $("#navbar").load("components/navbar.html", function() {
-              const element = document.getElementById("home");
+              const element = document.getElementById("user-lists");
               if (element) {
                   element.classList.add("active");
               }
           });
         });
     </script>
-    
 </head>
 <body class="bg-secondary">
     <div id="navbar"></div>
-    
+
     <div class="bg-white text-black text-center p-1">
-        <h2>Welcome to BetterTierListMaker!</h2>
-   </div>
+         <h2>Your Tier Lists</h2>
+    </div>
 
 </body>
 </html>
