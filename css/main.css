@@ -1,0 +1,26 @@
+.first, .settings, .editing {
+    height: 95px;
+    border: 1px black solid;
+}
+.first, .settings {
+    background-color: darkgray;
+}
+.first {
+
+}
+.first p {
+    padding-top: 50%;
+}
+.settings { 
+    
+} 
+.settings img{
+    max-width:100%;
+    margin-top:15px;
+}
+.editing {
+    background-color: #ccc;
+}
+.buttons {
+    margin-left: -15px;
+}
