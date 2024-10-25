@@ -22,5 +22,10 @@
     background-color: #ccc;
 }
 .buttons {
-    margin-left: -15px;
+
+}
+.buttons div{
+    width:95px;
+    padding-left: 15px;
+    padding-right:15px;
 }
