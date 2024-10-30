@@ -20,6 +20,7 @@
             case "imagebtn":
                 menu = id('imageImport');
                 menu.classList.remove('hidden');
+                uploadImageMenu();
                 break;
             case "fontbtn":
                 menu = id('fontImport');
@@ -36,6 +37,7 @@
             case "savebtn":
                 menu = id('saveProject');
                 menu.classList.remove('hidden');
+                saveProjectMenu();
                 break;
             default:
                 console.log("Unknown id: "+ btn_id);
@@ -58,29 +60,74 @@
     });
 
     // Image Upload Function
-    id('submit-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        const files = imageUpload.files;
+    function uploadImageMenu () {
+        id('submit-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const files = imageUpload.files;
 
-        for (let file of files){
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = create('img');
-                    img.src = e.target.result;
-                    img.className = 'draggable-image';
-                    img.draggable = true;
-                    img.id = 'draggableImage_' + Date.now();
+            for (let file of files){
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = create('img');
+                        img.src = e.target.result;
+                        img.className = 'draggable-image';
+                        img.draggable = true;
+                        img.id = 'draggableImage_' + Date.now();
 
-                    makeImageDraggable(img);
-                    imageContainer.appendChild(img);
-                };
-                reader.readAsDataURL(file);
+                        makeImageDraggable(img);
+                        imageContainer.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
             }
+            // Clear the file input after processing
+            imageUpload.value = '';
+            // Hides menu after uploading images.
+            id('imageImport').style.display = 'none';
+        });
+    }
+
+    function saveProjectMenu(){
+        id('save-btn').addEventListener('click', (e) => {
+            console.log(getJSON());
+        });
+    }
+
+    //Save project as json
+    function getJSON(){
+        let title = '';
+        let author = '';
+        let font = '';
+        let projectJSON = {
+            'title' : title,
+            'author' : author,
+            'font': font, 
+        };
+        let rows = qsa('.container .row');
+        //iterate over rows
+        for(let i = 0; i < rows.length; i++){
+            let row = rows[i];
+            let cells = row.querySelectorAll('.editing img');
+            let j;
+            //create temp JSON file to append back to projectJSON
+            let rowJSON = {
+                'name': row.querySelector('.first').textContent || "",
+                'color': getColor(row.querySelector('.first')),
+            };
+            //iterate through each image in that row, and add it to JSON
+            for(j = 0; j < cells.length; j++){
+                rowJSON['item' + j] = {
+                    'src': cells[j].src,
+                    'alt': cells[j].alt || "",
+                    'description': ''
+                }
+            }
+            //append row to projectJSON
+            projectJSON['row' + i] = rowJSON; 
         }
-        // Clear the file input after processing
-        imageUpload.value = '';
-    });
+
+    }
 
     // Function to make images draggable
     function makeImageDraggable(image) {
@@ -162,5 +209,9 @@
 
     function create(idName) {
         return document.createElement(idName);
+    }
+
+    function getColor(element){
+        return window.getComputedStyle(element).backgroundColor;
     }
 })()
