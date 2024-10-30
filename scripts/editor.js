@@ -40,7 +40,97 @@
             default:
                 console.log("Unknown id: "+ btn_id);
         }
+
+    /*Test Code for Images*/
+    const imageContainer = id('imageContainer');
+    const imageUpload = id('imageUpload');
+    let draggableImages = qsa('.draggable-image');
+    let editingDivs = qsa('.editing');
+
+    // Add Close Button Function
+    qs('.close-btn').addEventListener('click', function() {
+            id('imageImport').style.display = 'none';
+    });
+
+    // Allow Image Upload Box to Reopen
+    id('imagebtn').addEventListener('click', function(){
+            id('imageImport').style.display = 'block';
+    });
+
+    // Image Upload Function
+    id('submit-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const files = imageUpload.files;
+
+        for (let file of files){
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = create('img');
+                    img.src = e.target.result;
+                    img.className = 'draggable-image';
+                    img.draggable = true;
+                    img.id = 'draggableImage_' + Date.now();
+
+                    makeImageDraggable(img);
+                    imageContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        // Clear the file input after processing
+        imageUpload.value = '';
+    });
+
+    // Function to make images draggable
+    function makeImageDraggable(image) {
+        image.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', e.target.id);
+        });
     }
+
+    // Add EventListeners to Divs
+    function attachEventListeners() {
+        editingDivs.forEach(item => {
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                item.classList.add('dragover');
+            });
+
+            item.addEventListener('dragleave', (e) => {
+                item.classList.remove('dragover');
+            });
+
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                item.classList.remove('dragover');
+                const imageId = e.dataTransfer.getData('text/plain');
+                const image = document.getElementById(imageId);
+                
+                if (!image) return;
+                
+                if (image.parentElement === imageContainer) {
+                    const newImage = image.cloneNode(true);
+                    newImage.draggable = true;
+                    newImage.id = 'image_' + Date.now();
+                    
+                    makeImageDraggable(newImage);
+                    item.appendChild(newImage);
+                    image.remove();
+                } 
+                else if (image.parentElement.classList.contains('editing')) {
+                    item.appendChild(image);
+                }
+            });
+        });
+    }
+
+    draggableImages.forEach(image => {
+            makeImageDraggable(image);
+    });
+    attachEventListeners();
+        }
+ 
     /* ------------------------------ Helper Functions ------------------------------ */
     /**
      * Returns the element that has the ID attribute with the specified value.
@@ -67,5 +157,10 @@
      */
     function qsa(query) {
         return document.querySelectorAll(query);
+    }
+
+
+    function create(idName) {
+        return document.createElement(idName);
     }
 })()

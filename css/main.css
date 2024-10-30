@@ -19,8 +19,56 @@
     margin-top:15px;
 }
 .editing {
+    border: 1px solid #000;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-x: auto;
+    min-height: 95px;
     background-color: #ccc;
 }
+
+
+.editing img {
+    cursor: move;
+    object-fit: cover;
+    margin-left: 0;
+    flex-shrink: 0;
+    width: 93px;
+    height: 93px;
+}
+
+.image-container {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    justify-content:baseline;
+    background-color: #343A40;
+    padding: 10px;
+    z-index: 1000;
+    overflow: auto;
+}
+
+.draggable-image {
+    cursor: move;
+    object-fit: cover;
+    width: 93px;
+    height: 93px;
+}
+
+.close-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 20px;
+}
+
 .buttons {
 
 }
