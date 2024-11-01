@@ -5,7 +5,9 @@
     function init() {
         hideMenus();
         const btn_list = ['imagebtn', 'fontbtn', 'importbtn', 'exportbtn', 'savebtn'];
-        btn_list.forEach(btn => {id(btn).addEventListener('click', (e) => {showMenu(e.target.id)})});
+        btn_list.forEach(btn => {id(btn).addEventListener('click', (e) => {
+            e.preventDefault();
+            showMenu(e.target.id)})});
     }
     function hideMenus(){
         let menus = qsa('.menu');
@@ -90,6 +92,7 @@
 
     function saveProjectMenu(){
         id('save-btn').addEventListener('click', (e) => {
+            e.preventDefault();
             console.log(getJSON());
         });
     }
@@ -106,13 +109,13 @@
         };
         let rows = qsa('.container .row');
         //iterate over rows
-        for(let i = 0; i < rows.length; i++){
+        for(let i = 0; i < rows.length-1; i++){
             let row = rows[i];
             let cells = row.querySelectorAll('.editing img');
             let j;
             //create temp JSON file to append back to projectJSON
             let rowJSON = {
-                'name': row.querySelector('.first').textContent || "",
+                'name': row.querySelector('.first').textContent || "", //error here
                 'color': getColor(row.querySelector('.first')),
             };
             //iterate through each image in that row, and add it to JSON
@@ -121,11 +124,12 @@
                     'src': cells[j].src,
                     'alt': cells[j].alt || "",
                     'description': ''
-                }
+                };
             }
             //append row to projectJSON
-            projectJSON['row' + i] = rowJSON; 
+            projectJSON['row' + i] = rowJSON;
         }
+        return projectJSON; 
 
     }
 
