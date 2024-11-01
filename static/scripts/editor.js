@@ -94,6 +94,7 @@
         id('save-btn').addEventListener('click', (e) => {
             e.preventDefault();
             console.log(getJSON());
+            id('saveProject').classList.add('hidden');
         });
     }
 
@@ -109,7 +110,7 @@
         };
         let rows = qsa('.container .row');
         //iterate over rows
-        for(let i = 0; i < rows.length-1; i++){
+        for(let i = 0; i < rows.length-1; i++){ //rows.length -1 because the last row contains the buttons.
             let row = rows[i];
             let cells = row.querySelectorAll('.editing img');
             let j;
