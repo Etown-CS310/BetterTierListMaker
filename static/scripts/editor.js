@@ -94,6 +94,9 @@
         id('save-btn').addEventListener('click', (e) => {
             e.preventDefault();
             console.log(getJSON());
+            fetch(url + "img-upload")
+            .then(checkStatus)
+            .then(updateImages);
             id('saveProject').classList.add('hidden');
         });
     }
@@ -132,6 +135,11 @@
         }
         return projectJSON; 
 
+    }
+    function updateImages(response) {
+        //changes the src for images on the page to the server's location.
+        // res = response.json();
+        return;
     }
 
     // Function to make images draggable
@@ -219,4 +227,16 @@
     function getColor(element){
         return window.getComputedStyle(element).backgroundColor;
     }
+
+    /**
+     * This function needs documentation.
+     * @returns {} response
+     */
+    function checkStatus(response) {
+        if (!response.ok) {
+            throw Error("Error in request: " + response.statusText);
+        }
+        return response;
+    }
+
 })()
