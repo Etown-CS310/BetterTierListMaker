@@ -44,7 +44,6 @@
             default:
                 console.log("Unknown id: "+ btn_id);
         }
-
     /*Test Code for Images*/
     const imageContainer = id('imageContainer');
     const imageUpload = id('imageUpload');
@@ -66,7 +65,6 @@
         id('submit-btn').addEventListener('click', function(e) {
             e.preventDefault();
             const files = imageUpload.files;
-
             for (let file of files){
                 if (file.type.startsWith('image/')) {
                     const reader = new FileReader();
@@ -89,14 +87,16 @@
             id('imageImport').style.display = 'none';
         });
     }
+    
 
     function saveProjectMenu(){
         id('save-btn').addEventListener('click', (e) => {
             e.preventDefault();
             console.log(getJSON());
-            fetch(url + "img-upload")
-            .then(checkStatus)
-            .then(updateImages);
+            uploadImages();
+            //fetch(url + "img-upload")
+            //.then(checkStatus)
+            //.then(updateImages);
             id('saveProject').classList.add('hidden');
         });
     }
@@ -136,10 +136,43 @@
         return projectJSON; 
 
     }
+    async function uploadImages() {
+        const images = qsa(".editing img");
+        const formData = new FormData();
+        images.forEach((img, idx) => {
+            fetch(img)
+            .then((res) => res.blob())
+            .then((blob)=>{
+                formData.append("images", blob, `image${idx+1}.jpg`);
+            });
+        });
+        setTimeout(async() => {
+            try{
+                const response = await fetch("http://localhost:8080/img-upload", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+                updateImages(data);
+            }catch (error){
+                console.log("Image Upload Error: ", error);
+            }
+        }, 1000);
+    }
     function updateImages(response) {
         //changes the src for images on the page to the server's location.
         // res = response.json();
-        return;
+        let rows = qsa('.container .row');
+        //iterate over rows
+        for(let i = 0; i < rows.length-1; i++){ //rows.length -1 because the last row contains the buttons.
+            let row = rows[i];
+            let cells = row.querySelectorAll('.editing img');
+            let j;
+            for(j = 0; j < cells.length; j++){
+                cells[j].src = response.files[i+j];
+            }
+        }
     }
 
     // Function to make images draggable
@@ -189,7 +222,7 @@
             makeImageDraggable(image);
     });
     attachEventListeners();
-        }
+    }
  
     /* ------------------------------ Helper Functions ------------------------------ */
     /**
