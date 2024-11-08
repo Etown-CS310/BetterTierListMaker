@@ -1,0 +1,38 @@
+#login-panel{
+    position: absolute;
+    width: 35%;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    max-width: 100%;
+    max-height: 60%;
+    overflow: auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius:17px;
+}
+
+#login-submit-button{
+    background-color: #3c3f42;
+    border:black;
+}
+
+#login-submit-button:hover{
+    background-color: #6C757D;
+}
+
+#login-submit-button:focus{
+    box-shadow:0 0 0 .2rem rgba(0, 0, 0, 0.7);
+}
+
+#not-registered{
+    position: relative;
+    top:100px;
+}
+
+#already-registered{
+    position: relative;
+    top:100px;
+}

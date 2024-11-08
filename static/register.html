@@ -1,0 +1,56 @@
+<!-- This is the homepage. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/logo-icon.png"> 
+    <title>BetterTierListMaker - Register</title>
+    
+    <!-- Loads jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- Loads Navigation Bar -->
+    <script> 
+        $(function(){
+          $("#navbar").load("components/navbar.html", function() {
+              const element = document.getElementById("register");
+              if (element) {
+                  element.classList.add("active");
+              }
+          });
+        });
+    </script>
+    <link rel="stylesheet" href="css/login-register.css">
+    
+</head>
+
+<body class="bg-secondary">
+    <div id="navbar"></div>
+    
+    <div class="bg-white text-black text-center p-1">
+        <h2>Register</h2>
+   </div>
+
+   <div id="login-panel">
+   <form>
+    <div class="form-group">
+      <label for="usernameInput">Username</label>
+      <input type="username" class="form-control" id="usernameInput" placeholder="Username" required>
+      
+    </div>
+    <div class="form-group">
+      <label for="passwordInput">Password</label>
+      <input type="password" class="form-control" id="passwordInput" placeholder="Password" required>
+    </div>
+    
+    <button id="login-submit-button" type="submit" class="btn btn-primary">Register</button>
+  </form>
+
+  <div id="already-registered">Already Registered?</span><br><br><a href="login.html"><span>Login Here</span></a>
+  </div>
+
+</div>
+
+</body>
+</html>
