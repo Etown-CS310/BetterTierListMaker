@@ -1,0 +1,35 @@
+<!-- This is the homepage. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/logo-icon.png"> 
+    <title>BetterTierListMaker - Home</title>
+    
+    <!-- Loads jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- Loads Navigation Bar -->
+    <script> 
+        $(function(){
+          $("#navbar").load("components/navbar.html", function() {
+              const element = document.getElementById("home");
+              if (element) {
+                  element.classList.add("user");
+              }
+          });
+        });
+    </script>
+    
+</head>
+
+<body class="bg-secondary">
+    <div id="navbar"></div>
+    
+    <div class="bg-white text-black text-center p-1">
+        <h2><span id="username"></span> , Welcome to BetterTierListMaker</h2>
+   </div>
+
+</body>
+</html>
