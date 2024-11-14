@@ -21,6 +21,7 @@
           });
         });
     </script>
+    <script src="./scripts/login.js"></script>
     <link rel="stylesheet" href="css/login-register.css">
     
 </head>
@@ -35,20 +36,23 @@
    <div id="login-panel">
    <form>
     <div class="form-group">
-      <label for="usernameInput">Username</label>
-      <input type="username" class="form-control" id="usernameInput" placeholder="Username" required>
+      <label for="username">Username</label>
+      <input type="username" class="form-control" id="username" placeholder="Username" required>
       
     </div>
     <div class="form-group">
-      <label for="passwordInput">Password</label>
-      <input type="password" class="form-control" id="passwordInput" placeholder="Password" required>
+      <label for="password">Password</label>
+      <input type="password" class="form-control" id="password" placeholder="Password" required>
     </div>
     
-    <button id="login-submit-button" type="submit" class="btn btn-primary">Login</button>
+    <button id="login-btn" type="button" class="btn btn-primary">Login</button>
   </form>
 
-  <div id="not-registered">Not Register?</span><br><br><a href="register.html"><span>Register Here</span></a>
+
+  <p id="message"></p>
+  <div id="not-registered">Not Registered?</span><br><br><a href="register.html"><span>Register Here</span></a>
   </div>
+
 
 </div>
 

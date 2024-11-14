@@ -1,4 +1,6 @@
 "use strict";
+
+require('dotenv').config();
 const express = require("express");
 const path = require("path");
 const multer = require("multer");
@@ -16,6 +18,7 @@ app.use(express.json());
 //app.use(multer().none());
 
 const PORT = process.env.PORT || 8080;
+const DB_PATH = "database/btlm.db";
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -58,162 +61,165 @@ app.use("/image", express.static(path.join(__dirname, "database/images")));
 //                      Login and Registration Code
 //--------------------------------------------------------------------------------
 
-// Account Registration
+//Account Registration
 
-// app.post('/register', async function (req, res){
-//     try{
-//         const username = req.body.username;
-//         const password = req.body.password;
+const jwtSecret = process.env.JWT_SECRET;
 
-//         if (!username || !password){
-//             return res.status(400).json({
-//                 message: "Missing username or password."
-//             });
-//         }
+app.post('/register', async function (req, res){
+    try{
+        const username = req.body.username;
+        const password = req.body.password;
 
-//         const user = await findUser(username);
+        if (!username || !password){
+            return res.status(400).json({
+                message: "Missing username or password."
+            });
+        }
 
-//         if (user){
-//             return res.status(400).json({
-//                 message: "User already registered."
-//             });
-//         }
-//         const password_cipher = await bcrypt.hash(password, 10);
-//         const result = await insertUser(username, password_cipher);
+        const user = await findUser(username);
 
-//         if (result) {
-//             return res.status(200).json({
-//                 message: "Account has been created successfully."
-//             });
-//         }
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(500).json({
-//             message: "Error on the server."
-//         });
-//     }
-// });
+        if (user){
+            return res.status(400).json({
+                message: "User already registered."
+            });
+        }
+        const password_cipher = await bcrypt.hash(password, 10);
+        const result = await insertUser(username, password_cipher);
 
-// //Login
+        if (result) {
+            return res.status(200).json({
+                message: "Account has been created successfully."
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Error on the server."
+        });
+    }
+});
 
-// app.post('/login', async function (req, res) {
-//     try {
-//         const username = req.body.username;
-//         const password = req.body.password;
+//Login
 
-//         if (!username || !password) {
-//             return res.status(400).json({
-//                 message: "Missing username or password."
-//             });
-//         }
+app.post('/login', async function (req, res) {
+    try {
+        const username = req.body.username;
+        const password = req.body.password;
 
-//         const user = await findUser(username);
-//         if (!user) {
-//             return res.status(400).json({
-//                 message: "User not found."
-//             });
-//         }
+        if (!username || !password) {
+            return res.status(400).json({
+                message: "Missing username or password."
+            });
+        }
+
+        const user = await findUser(username);
+        if (!user) {
+            return res.status(400).json({
+                message: "User not found."
+            });
+        }
         
 
-// // Authentication
+// Authentication
 
-//     const result = await bcrypt.compare(password, user.password);
-//         if (result) {
-//             const maxAge = 7 * 24 * 60 * 60;
+    const result = await bcrypt.compare(password, user.password);
+        if (result) {
+            const maxAge = 7 * 24 * 60 * 60;
 
-//             const token = jwt.sign(
-//                 { "login": true, "username": username },
-//                 jwtSecret,
-//                 { expiresIn: maxAge }
-//             );
+            const token = jwt.sign(
+                { "login": true, "username": username },
+                jwtSecret,
+                { expiresIn: maxAge }
+            );
             
-//             res.cookie("my_cipher", token, {
-//                 httpOnly: true,
-//                 maxAge: maxAge * 1000
-//             });
+            res.cookie("my_cipher", token, {
+                httpOnly: true,
+                maxAge: maxAge * 1000
+            });
 
-//             res.status(200).json({
-//                 'message': "Login successful"
-//             });
-//         }
-//         else{
-//             res.status(400).json({
-//                 'message': "Password is incorrect."
-//             });
-//          }
+            res.status(200).json({
+                'message': "Login successful"
+            });
+        }
+        else{
+            res.status(400).json({
+                'message': "Password is incorrect."
+            });
+         }
 
-//         } catch (error) {
-//             console.log(error);
-//             res.status(500).json({
-//                 message: "Error on the server."
-//             });
-//         }
-//     });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                message: "Error on the server."
+            });
+        }
+    });
 
-// // Render users page
+// Render users page
 
-// app.get('/user', (req, res) => {
+app.get('/user', (req, res) => {
 
-//     const token = req.cookies.jwt;
+    const token = req.cookies.my_cipher;
 
-//     if (token) {
-//         jwt.verify(token, jwtSecret, (err, decodedToken) => {
-//             console.log("decodedToken", decodedToken);
+    if (token) {
+        jwt.verify(token, jwtSecret, (err, decodedToken) => {
+            console.log("decodedToken", decodedToken);
 
-//             const login_status = false;
+            const login_status = decodedToken.login;
 
 
-//             if (login_status) {
+            if (login_status) {
                 
-//                 res.sendFile(__dirname + "/public/user.html");
-//             } else {
+                res.sendFile(__dirname + "/static/user.html");
+            } else {
                 
-//                 res.status(401).json({
-//                     message: "Not authorized"
-//                 });
-//             }
-//         })
-//     }else {
-//         return res.status(401).json({
-//             message: "Not authorized, token not available"
-//         });
+                res.status(401).json({
+                    message: "Not authorized"
+                });
+            }
+        })
+    }else {
+        return res.status(401).json({
+            message: "Not authorized, token not available"
+        });
 
-//     }
-// });
+    }
+});
 
-// //Find User in Database
+//Find User in Database
 
-// async function findUser(username){
-//     const db = await getDBConnection();
-//     const query = "select id from users where username = ?";
-//     const user = await db.get(query, [email]);
+async function findUser(username){
+    const db = await getDBConnection();
+    const query = "SELECT id, username, password FROM users WHERE username = ?";
+    const user = await db.get(query, [username]);
 
-//     await db.close();
-//     return user;
-// }
+    await db.close();
+    return user;
+}
 
-// //Add user informaiton to database
+//Add user informaiton to database
 
-// async function insertUser(username, password_cipher){
-//     const db = await getDBConnection();
-//     const insertSQL = "inster into users (username, password)" + "values (?,?)";
-//     console.log(result);
-//     const user = await findUser(username);
+async function insertUser(username, password_cipher){
+    const db = await getDBConnection();
+    const insertSQL = "insert into users (username, password)" + "values (?,?)";
+    const result = await db.run(insertSQL, [username, password_cipher]);
+    console.log(result);
+    const user = await findUser(username);
     
-//     await db.close();
-//     return user;
-// }
+    await db.close();
+    return user;
+}
 
-// //Setup Database Connection
+//Setup Database Connection
 
-// async function getDBConnection(){
-//     const db = await sqlite.open({
-//         filename: DB_PATH,
-//         driver: sqlite3.Database
-//     });
+async function getDBConnection(){
+    const db = await sqlite.open({
+        filename: DB_PATH,
+        driver: sqlite3.Database
+    });
 
-//     return db;
-// }
+    return db;
+}
 
 app.listen(PORT);
 console.log('Server started at http://localhost:' + PORT);

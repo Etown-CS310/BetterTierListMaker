@@ -6,59 +6,40 @@
 
     function init() {
         id('register').addEventListener('click', register);
-        id('login').addEventListener('click', login);
+   
     }
 
     function register() {
-      
         const url = BASE_URL + "/register";
-
-        let formData = new FormData();
-
-        formData.append("username", id("username").value);
-        formData.append("password", id("password").value);
-
+    
+        const data = {
+            username: id("username").value,
+            password: id("password").value
+        };
+    
         const options = {
             method: "POST",
-            body: formData
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
         };
-
+    
         fetch(url, options)
             .then(checkStatus)
             .then((data) => {
                 id('message').textContent = data['message'];
-            });
-
-    }
-
-    function login() {
-       
-        const url = BASE_URL + "/login";
-
-        let formData = new FormData();
-
-        formData.append("username", id("username").value);
-        formData.append("password", id("password").value);
-
-        const options = {
-            method: "POST",
-            body: formData
-        };
-
-        fetch(url, options)
-            .then(checkStatus)
-            .then((data) => {
-                if (data['message'] === "Login successful") {
-                    id('message').textContent = data['message'];
-
-                    // TODO: (part 3) - redirect to /user after login
-                    // uncomment the following two lines after you have completed Part 2b
-                    window.sessionStorage.setItem('username', username);
-                    location.assign('/user');
+                if (data.message === "Account has been created successfully.") {
+                    console.log("Registration successful");
+                    id('status').textContent = "Now you can login";
+                } else {
+                    console.log("Registration failed or message is different");
                 }
-            });
-
+            })
+            .catch((error) => console.error("Error:", error));
     }
+
+   
 })();
 
 
