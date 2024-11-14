@@ -4,16 +4,16 @@ const path = require("path");
 const multer = require("multer");
 const sqlite3 = require('sqlite3');
 const sqlite = require('sqlite');
-const cookieParser = require("cookie-parser");
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+//const cookieParser = require("cookie-parser");
+//const bcrypt = require('bcryptjs');
+//const jwt = require('jsonwebtoken');
 
 
 const app = express();
-app.use(cookieParser());
+//app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(multer().none());
+//app.use(multer().none());
 
 const PORT = process.env.PORT || 8080;
 
@@ -37,7 +37,7 @@ app.post('/img-upload', upload.array('images'), (req, res) => {
     try {
         const filePaths = req.files.map((file) => {
             const fileName = path.basename(file.path);
-            return `http://localhost:8080/images/${fileName}`;
+            return `http://localhost:8080/image/${fileName}`;
         });
         res.status(200).json({files: filePaths});
     }catch(error){
@@ -49,10 +49,10 @@ app.post('/img-upload', upload.array('images'), (req, res) => {
 
 app.get('/images/:id', (req, res) => {
     const id = req.params.id;
-    const imgUrl = `http://localhost:{PORT}/database/images/${id}`;
+    const imgUrl = `http://localhost:{PORT}/image/${id}`;
     res.status(200).json({src:imgUrl})
 });
-app.use("/images", express.static(path.join(__dirname, "database/images")));
+app.use("/image", express.static(path.join(__dirname, "database/images")));
 
 //--------------------------------------------------------------------------------
 //                      Login and Registration Code

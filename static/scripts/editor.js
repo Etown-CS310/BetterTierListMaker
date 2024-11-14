@@ -35,6 +35,7 @@
             case "exportbtn":
                 menu = id('projectExport');
                 menu.classList.remove('hidden');
+                downloadProject();
                 break;
             case "savebtn":
                 menu = id('saveProject');
@@ -86,6 +87,46 @@
             // Hides menu after uploading images.
             id('imageImport').style.display = 'none';
         });
+    }
+    function downloadProject(){
+        id('dl-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const jsonString = JSON.stringify(getJSON(), null,2);
+            const blob = new Blob([jsonString], {type:'application/json'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download
+            link.click();
+            id('projectExport').classList.add('hidden');
+        });
+    }
+
+    function uploadJSON(){
+        const fileInput = id('jsonFileInput'); //need to make
+        if(fileInput.length === 0){
+            alert('Please select a file to upload');
+            return;
+        }
+        const file = fileInput.files[0];
+        if(file.type !== 'application/json'){
+            alert("Please upload a JSON file");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            try{
+                const jsonData = JSON.parse(event.target.result);
+                useJSON(jsonData);
+            }catch(error){
+                alert("Error parsing JSON file");
+            }
+        }
+        reader.readAsText(file);
+    }
+
+    function useJSON(json){
+        //finish this
+        return;
     }
     
 
@@ -139,13 +180,19 @@
     async function uploadImages() {
         const images = qsa(".editing img");
         const formData = new FormData();
-        images.forEach((img, idx) => {
-            fetch(img)
-            .then((res) => res.blob())
-            .then((blob)=>{
-                formData.append("images", blob, `image${idx+1}.jpg`);
-            });
-        });
+        for(let i = 0; i < images.length; i++){
+            const img = images[i];
+            const res = await fetch(img.src);
+            const blob = await res.blob();
+            formData.append("images", blob, `image${i}.jpg`);
+        }
+        // images.forEach((img, idx) => {
+        //     fetch(img.src)
+        //     .then((res) => res.blob())
+        //     .then((blob)=>{
+        //         formData.append("images", blob, `image${idx+1}.jpg`);
+        //     });
+        // });
         setTimeout(async() => {
             try{
                 const response = await fetch("http://localhost:8080/img-upload", {
@@ -165,12 +212,13 @@
         // res = response.json();
         let rows = qsa('.container .row');
         //iterate over rows
+        let idx = 0;
         for(let i = 0; i < rows.length-1; i++){ //rows.length -1 because the last row contains the buttons.
             let row = rows[i];
             let cells = row.querySelectorAll('.editing img');
             let j;
             for(j = 0; j < cells.length; j++){
-                cells[j].src = response.files[i+j];
+                cells[j].src = response.files.reverse()[idx++];
             }
         }
     }
