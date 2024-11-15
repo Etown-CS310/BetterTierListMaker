@@ -31,6 +31,7 @@
             case "importbtn":
                 menu = id('projectImport');
                 menu.classList.remove('hidden');
+                importJSON();
                 break;
             case "exportbtn":
                 menu = id('projectExport');
@@ -100,7 +101,13 @@
             id('projectExport').classList.add('hidden');
         });
     }
-
+    function importJSON() {
+        id('open-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            uploadJSON();
+            id('projectImport').classList.add('hidden');
+        });
+    }
     function uploadJSON(){
         const fileInput = id('jsonFileInput'); //need to make
         if(fileInput.length === 0){
@@ -115,9 +122,10 @@
         const reader = new FileReader();
         reader.onload = function (event) {
             try{
-                const jsonData = JSON.parse(event.target.result);
+                var jsonData = JSON.parse(event.target.result);
                 useJSON(jsonData);
             }catch(error){
+                //console.log(event.target.result);
                 alert("Error parsing JSON file");
             }
         }
@@ -125,8 +133,23 @@
     }
 
     function useJSON(json){
-        //finish this
-        return;
+        //set tier list title
+        let rows = qsa('.container .row');
+        for(let i = 0; i < rows.length-1; i++){ 
+            let row = rows[i];
+            let row_area = row.querySelector('.editing');
+            //set row title/color
+            for(let j = 0; j < json.rows[i].items.length; j++) {
+                let new_img = document.createElement('img');
+                new_img.src = json.rows[i].items[j].src;
+                new_img.classList.add('draggable-image');
+                new_img.draggable = true;
+                makeImageDraggable(new_img);
+                //new_img.alt = json.rows[i].items[j].alt;
+                //set img description
+                row_area.appendChild(new_img);
+            }   
+        }
     }
     
 
@@ -150,7 +173,8 @@
         let projectJSON = {
             'title' : title,
             'author' : author,
-            'font': font, 
+            'font': font,
+            'rows': [] 
         };
         let rows = qsa('.container .row');
         //iterate over rows
@@ -162,17 +186,18 @@
             let rowJSON = {
                 'name': row.querySelector('.first').textContent || "", //error here
                 'color': getColor(row.querySelector('.first')),
+                'items': []
             };
             //iterate through each image in that row, and add it to JSON
             for(j = 0; j < cells.length; j++){
-                rowJSON['item' + j] = {
+                rowJSON.items.push({
                     'src': cells[j].src,
                     'alt': cells[j].alt || "",
                     'description': ''
-                };
+                });
             }
             //append row to projectJSON
-            projectJSON['row' + i] = rowJSON;
+            projectJSON.rows.push(rowJSON);
         }
         return projectJSON; 
 

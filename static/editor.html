@@ -52,14 +52,17 @@
             </div>
             <div id = "projectImport" class = "menu">
                 <form>
-                    <button>Select Project</button>
-                    <button>Open</button>
+                    <!-- <button>Select Project</button> -->
+                    <form>
+                        <div><input type="file" id="jsonFileInput" accept=".json"></div>
+                    </form>
+                    <button id="open-btn">Open</button>
                 </form>
             </div>
             <div id = "projectExport" class = "menu">
                 <form>
-                    <option>Select a file format</option>
-                    <button id= 'dl-btn'>Download</button>
+                    <!-- <option>Select a file format</option> -->
+                    <button id= 'dl-btn'>Download JSON</button>
                 </form>
             </div>
             <div id = "saveProject" class = "menu">
