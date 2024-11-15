@@ -6,13 +6,13 @@ const path = require("path");
 const multer = require("multer");
 const sqlite3 = require('sqlite3');
 const sqlite = require('sqlite');
-//const cookieParser = require("cookie-parser");
-//const bcrypt = require('bcryptjs');
-//const jwt = require('jsonwebtoken');
+const cookieParser = require("cookie-parser");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 
 const app = express();
-//app.use(cookieParser());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 //app.use(multer().none());
