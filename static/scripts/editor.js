@@ -146,7 +146,12 @@
                 new_img.draggable = true;
                 makeImageDraggable(new_img);
                 //new_img.alt = json.rows[i].items[j].alt;
-                //set img description
+                new_img.title = json.rows[i].items[j].description;
+                new_img.addEventListener('contextmenu', (e)=> {
+                    e.preventDefault();
+                    e.target.title = prompt("Enter your description here: ");
+                    return false;
+                }, false);
                 row_area.appendChild(new_img);
             }   
         }
@@ -193,7 +198,7 @@
                 rowJSON.items.push({
                     'src': cells[j].src,
                     'alt': cells[j].alt || "",
-                    'description': ''
+                    'description': cells[j].title
                 });
             }
             //append row to projectJSON
@@ -281,6 +286,11 @@
                     newImage.id = 'image_' + Date.now();
                     
                     makeImageDraggable(newImage);
+                    newImage.addEventListener('contextmenu', (e)=> {
+                        e.preventDefault();
+                        e.target.title = prompt("Enter your description here: ");
+                        return false;
+                    }, false)
                     item.appendChild(newImage);
                     image.remove();
                 } 
