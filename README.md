@@ -1,3 +1,5 @@
+![Proof HTML](https://github.com/Etown-CS310/demo-repository/actions/workflows/proof-html.yml/badge.svg)
+
 # BetterTierListMaker
 <b>Project Authors:</b> Phillip G. and Kevin B.
 
