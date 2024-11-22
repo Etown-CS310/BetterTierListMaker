@@ -1,4 +1,4 @@
-![Proof HTML](https://github.com/Etown-CS310/demo-repository/actions/workflows/proof-html.yml/badge.svg)
+![Firebase](https://img.shields.io/badge/Sqlite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 
 # BetterTierListMaker
 <b>Project Authors:</b> Phillip G. and Kevin B.
