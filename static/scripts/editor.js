@@ -6,16 +6,19 @@
         hideMenus();
         const btn_list = ['imagebtn', 'fontbtn', 'importbtn', 'exportbtn', 'savebtn',];
         btn_list.forEach(btn => {id(btn).addEventListener('click', (e) => {
-            e.preventDefault();
+            e.preventDefault(); //used to prevent bootstrap from refreshing the page every time a click event happens.
             showMenu(e.target.id)})});
     }
+    //Hides the menus when the user clicks a button from one
     function hideMenus(){
         let menus = qsa('.menu');
         for(let i = 0; i < menus.length; i++){
             menus[i].classList.add('hidden');
         }
     }
-    function showMenu(btn_id){
+
+    //When a menu button is clicked, show the correct menu and add eventlisteners.
+    function showMenu(btn_id) {
         hideMenus();
         let menu;
         switch(btn_id){
@@ -41,32 +44,19 @@
             case "savebtn":
                 menu = id('saveProject');
                 menu.classList.remove('hidden');
-                saveProjectToServer()
-                
+                saveProjectMenu();
                 break;
             default:
                 console.log("Unknown id: "+ btn_id);
         }
-    /*Test Code for Images*/
-    const imageContainer = id('imageContainer');
-    const imageUpload = id('imageUpload');
-    let draggableImages = qsa('.draggable-image');
-    let editingDivs = qsa('.editing');
+    } 
 
-    // Add Close Button Function
-    qs('.close-btn').addEventListener('click', function() {
-            id('imageImport').style.display = 'none';
-    });
-
-    // Allow Image Upload Box to Reopen
-    id('imagebtn').addEventListener('click', function(){
-            id('imageImport').style.display = 'block';
-    });
-
-    // Image Upload Function
+    //Adds listeners to the submit-btn that allows users to upload images, and makes them draggable.
     function uploadImageMenu () {
         id('submit-btn').addEventListener('click', function(e) {
             e.preventDefault();
+            const imageUpload = id('imageUpload');
+            const imageContainer = id('imageContainer');
             const files = imageUpload.files;
             for (let file of files){
                 if (file.type.startsWith('image/')) {
@@ -88,13 +78,29 @@
             imageUpload.value = '';
             // Hides menu after uploading images.
             id('imageImport').style.display = 'none';
+            let draggableImages = qsa('.draggable-image');
+            draggableImages.forEach(image => {
+                makeImageDraggable(image);
+            });
+            attachEventListeners(imageContainer);
+        });
+        // Add Close Button Function
+        qs('.close-btn').addEventListener('click', function() {
+            id('imageImport').style.display = 'none';
+        });
+
+        // Allow Image Upload Box to Reopen
+        id('imagebtn').addEventListener('click', function(){
+            id('imageImport').style.display = 'block';
         });
     }
+
+    //Used when user is trying to download their project as a JSON.
     function downloadProject(){
         id('dl-btn').addEventListener('click', function(e) {
             e.preventDefault();
             const jsonString = JSON.stringify(getJSON(), null,2);
-            const blob = new Blob([jsonString], {type:'application/json'});
+            const blob = new Blob([jsonString], {type:'application/json'}); //converts the JSON to a downloadable form.
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download
@@ -102,8 +108,77 @@
             id('projectExport').classList.add('hidden');
         });
     }
+    
+    //used to handle the menu for importing a project as a JSON
+    function importJSON() {
+        id('open-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            uploadJSON();
+            id('projectImport').classList.add('hidden');
+        });
+    }
 
-    function saveProjectToServer() {
+    //handles the actual upload of the JSON file
+    function uploadJSON(){
+        const fileInput = id('jsonFileInput'); 
+        if(fileInput.length === 0){
+            alert('Please select a file to upload');
+            return;
+        }
+        const file = fileInput.files[0];
+        if(file.type !== 'application/json'){ //verifies that the user uploaded a JSON file
+            alert("Please upload a JSON file");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            try{
+                var jsonData = JSON.parse(event.target.result);
+                useJSON(jsonData);
+            }catch(error){
+                alert("Error parsing JSON file"); //used to verify that the JSON is in the correct format
+            }
+        }
+        reader.readAsText(file);
+    }
+
+    //Used to parse through the users' uploaded JSON, and place images correctly
+    function useJSON(json){
+        //set tier list title
+        let rows = qsa('.container .row');
+        for(let i = 0; i < rows.length-1; i++){ 
+            let row = rows[i];
+            let row_area = row.querySelector('.editing');
+            //set row title/color
+            for(let j = 0; j < json.rows[i].items.length; j++) {
+                let new_img = document.createElement('img');
+                new_img.src = json.rows[i].items[j].src;
+                new_img.classList.add('draggable-image');
+                new_img.draggable = true;
+                makeImageDraggable(new_img);
+                //new_img.alt = json.rows[i].items[j].alt;
+                new_img.title = json.rows[i].items[j].description;
+                //right click event for adding a description to the image. For some reason contextmenu listeners need to return false in order to work.
+                new_img.addEventListener('contextmenu', (e)=> {
+                    e.preventDefault(); //prevents the normal context menu from appearing when image is right clicked.
+                    e.target.title = prompt("Enter your description here: ");
+                    return false;
+                }, false);
+                row_area.appendChild(new_img);
+            }   
+        }
+    }
+    
+    //Adds event listners to the buttons in the project menu.
+    function saveProjectMenu(){
+        //Save Button sends the images to the server
+        id('save-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log(getJSON());
+            uploadImages();
+            id('saveProject').classList.add('hidden');
+        });
+        //Publish saves your actual tier list to the server as a JSON
         id('pub-btn').addEventListener('click', function(e) {
             e.preventDefault();
             const jsonString = JSON.stringify(getJSON(), null, 2);
@@ -127,77 +202,8 @@
             });
         });
     }
-    
-    function importJSON() {
-        id('open-btn').addEventListener('click', function(e) {
-            e.preventDefault();
-            uploadJSON();
-            id('projectImport').classList.add('hidden');
-        });
-    }
-    function uploadJSON(){
-        const fileInput = id('jsonFileInput'); //need to make
-        if(fileInput.length === 0){
-            alert('Please select a file to upload');
-            return;
-        }
-        const file = fileInput.files[0];
-        if(file.type !== 'application/json'){
-            alert("Please upload a JSON file");
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = function (event) {
-            try{
-                var jsonData = JSON.parse(event.target.result);
-                useJSON(jsonData);
-            }catch(error){
-                //console.log(event.target.result);
-                alert("Error parsing JSON file");
-            }
-        }
-        reader.readAsText(file);
-    }
 
-    function useJSON(json){
-        //set tier list title
-        let rows = qsa('.container .row');
-        for(let i = 0; i < rows.length-1; i++){ 
-            let row = rows[i];
-            let row_area = row.querySelector('.editing');
-            //set row title/color
-            for(let j = 0; j < json.rows[i].items.length; j++) {
-                let new_img = document.createElement('img');
-                new_img.src = json.rows[i].items[j].src;
-                new_img.classList.add('draggable-image');
-                new_img.draggable = true;
-                makeImageDraggable(new_img);
-                //new_img.alt = json.rows[i].items[j].alt;
-                new_img.title = json.rows[i].items[j].description;
-                new_img.addEventListener('contextmenu', (e)=> {
-                    e.preventDefault();
-                    e.target.title = prompt("Enter your description here: ");
-                    return false;
-                }, false);
-                row_area.appendChild(new_img);
-            }   
-        }
-    }
-    
-
-    function saveProjectMenu(){
-        id('save-btn').addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log(getJSON());
-            uploadImages();
-            //fetch(url + "img-upload")
-            //.then(checkStatus)
-            //.then(updateImages);
-            id('saveProject').classList.add('hidden');
-        });
-    }
-
-    //Save project as json
+    //Convert current tier list to JSON format
     function getJSON(){
         let title = '';
         let author = '';
@@ -234,6 +240,8 @@
         return projectJSON; 
 
     }
+
+    //used to gather the images, send them to the server, and then return (and update) the new srcs
     async function uploadImages() {
         const images = qsa(".editing img");
         const formData = new FormData();
@@ -243,20 +251,13 @@
             const blob = await res.blob();
             formData.append("images", blob, `image${i}.jpg`);
         }
-        // images.forEach((img, idx) => {
-        //     fetch(img.src)
-        //     .then((res) => res.blob())
-        //     .then((blob)=>{
-        //         formData.append("images", blob, `image${idx+1}.jpg`);
-        //     });
-        // });
+        //Timeout is set to give the images time to blob.
         setTimeout(async() => {
             try{
                 const response = await fetch("http://localhost:8080/img-upload", {
                     method: "POST",
                     body: formData
                 });
-
                 const data = await response.json();
                 updateImages(data);
             }catch (error){
@@ -264,9 +265,10 @@
             }
         }, 1000);
     }
+
+    //Once the response is recieved with new src links for images, update the images on the list to the new src
     function updateImages(response) {
         //changes the src for images on the page to the server's location.
-        // res = response.json();
         let rows = qsa('.container .row');
         //iterate over rows
         let idx = 0;
@@ -288,7 +290,8 @@
     }
 
     // Add EventListeners to Divs
-    function attachEventListeners() {
+    function attachEventListeners(imageContainer) {
+        let editingDivs = qsa('.editing');
         editingDivs.forEach(item => {
             item.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -327,13 +330,6 @@
             });
         });
     }
-
-    draggableImages.forEach(image => {
-            makeImageDraggable(image);
-    });
-    attachEventListeners();
-    }
- 
     /* ------------------------------ Helper Functions ------------------------------ */
     /**
      * Returns the element that has the ID attribute with the specified value.
