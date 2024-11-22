@@ -104,6 +104,9 @@ app.post('/register', async function (req, res){
 
 app.post('/login', async function (req, res) {
     try {
+        res.clearCookie();
+        
+
         const username = req.body.username;
         const password = req.body.password;
 
@@ -189,6 +192,12 @@ app.get('/user', (req, res) => {
 
 app.post('/save-tierlist', async (req, res) => {
     try {
+
+        const token = req.cookies.my_cipher;
+        const decoded = jwt.verify(token, jwtSecret); 
+        const username = decoded.username;
+        console.log('Username:', username);
+
         
         const dirPath = path.join(__dirname, 'database', 'tierlists');
         await fs.mkdir(dirPath, { recursive: true }); // this creates the tierlists directory is it does not exists.
@@ -199,21 +208,22 @@ app.post('/save-tierlist', async (req, res) => {
         await fs.writeFile(filePath, JSON.stringify(req.body, null, 2));
 
         const db = await getDBConnection();
-        const insertSQL = "INSERT INTO TierLists (data) VALUES (?)"; // there will be more values later.
-        await db.run(insertSQL, [filename]);
+        const insertSQL = "INSERT INTO TierLists (data, author) VALUES (?, ?)"; // there will be more values later.
+        await db.run(insertSQL, [filename, username]);
         await db.close();
 
-        res.json({                                   /////
-            success: true,                              //                   
-            message: 'Tierlist saved successfully',     //
-            filename: filename                          //
-        });                                             //
-    } catch (error) {                                   // I set these because I wasn't getting info in console error statements.
-        console.error('Error saving tierlist:', error); //
-        res.status(500).json({                          //
-            success: false,                             //
-            message: 'Failed to save tierlist',         //
-            error: error.message                     /////
+        res.json({                                   
+            success: true,                                                
+            message: 'Tierlist saved successfully',     
+            filename: filename,
+            username: username                          
+        });                                             
+    } catch (error) {                                   
+        console.error('Error saving tierlist:', error); 
+        res.status(500).json({                          
+            success: false,                             
+            message: 'Failed to save tierlist',         
+            error: error.message                     
         });
     }
 });
