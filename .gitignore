@@ -3,3 +3,4 @@ node_modules/**
 database/images/**
 database/thumbnails/**
 database/tierlists/**
+database/btlm.db
