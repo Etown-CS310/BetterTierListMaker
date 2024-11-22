@@ -1,6 +1,7 @@
 "use strict";
 
 require('dotenv').config();
+const fs = require('fs').promises;
 const express = require("express");
 const path = require("path");
 const multer = require("multer");
@@ -14,7 +15,7 @@ const jwt = require('jsonwebtoken');
 const app = express();
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({limit:'10mb'}));
 //app.use(multer().none());
 
 const PORT = process.env.PORT || 8080;
@@ -183,6 +184,37 @@ app.get('/user', (req, res) => {
             message: "Not authorized, token not available"
         });
 
+    }
+});
+
+app.post('/save-tierlist', async (req, res) => {
+    try {
+        
+        const dirPath = path.join(__dirname, 'database', 'tierlists');
+        await fs.mkdir(dirPath, { recursive: true }); // this creates the tierlists directory is it does not exists.
+
+        const filename = `tierlist_${Date.now()}.json`;
+        const filePath = path.join(dirPath, filename);
+
+        await fs.writeFile(filePath, JSON.stringify(req.body, null, 2));
+
+        const db = await getDBConnection();
+        const insertSQL = "INSERT INTO TierLists (data) VALUES (?)"; // there will be more values later.
+        await db.run(insertSQL, [filename]);
+        await db.close();
+
+        res.json({                                   /////
+            success: true,                              //                   
+            message: 'Tierlist saved successfully',     //
+            filename: filename                          //
+        });                                             //
+    } catch (error) {                                   // I set these because I wasn't getting info in console error statements.
+        console.error('Error saving tierlist:', error); //
+        res.status(500).json({                          //
+            success: false,                             //
+            message: 'Failed to save tierlist',         //
+            error: error.message                     /////
+        });
     }
 });
 

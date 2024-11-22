@@ -4,7 +4,7 @@
     
     function init() {
         hideMenus();
-        const btn_list = ['imagebtn', 'fontbtn', 'importbtn', 'exportbtn', 'savebtn'];
+        const btn_list = ['imagebtn', 'fontbtn', 'importbtn', 'exportbtn', 'savebtn',];
         btn_list.forEach(btn => {id(btn).addEventListener('click', (e) => {
             e.preventDefault();
             showMenu(e.target.id)})});
@@ -41,7 +41,8 @@
             case "savebtn":
                 menu = id('saveProject');
                 menu.classList.remove('hidden');
-                saveProjectMenu();
+                saveProjectToServer()
+                
                 break;
             default:
                 console.log("Unknown id: "+ btn_id);
@@ -101,6 +102,32 @@
             id('projectExport').classList.add('hidden');
         });
     }
+
+    function saveProjectToServer() {
+        id('pub-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const jsonString = JSON.stringify(getJSON(), null, 2);
+            
+            fetch('http://localhost:8080/save-tierlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: jsonString
+            })
+            .then(checkStatus)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Tierlist saved:', data);
+                id('saveProject').classList.add('hidden');
+            })
+            .catch(error => {
+                console.error('Error saving tierlist:', error);
+                alert('Failed to save tierlist');
+            });
+        });
+    }
+    
     function importJSON() {
         id('open-btn').addEventListener('click', function(e) {
             e.preventDefault();
