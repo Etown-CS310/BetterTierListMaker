@@ -8,7 +8,58 @@
         btn_list.forEach(btn => {id(btn).addEventListener('click', (e) => {
             e.preventDefault(); //used to prevent bootstrap from refreshing the page every time a click event happens.
             showMenu(e.target.id)})});
-    }
+    
+
+    const settings = qsa('.settings img');
+    settings.forEach(icon =>{
+        icon.addEventListener('click', function(){
+            const row = this.closest('.row');
+            const firstCol = row.querySelector('.first p');
+            const first = row.querySelector('.first');
+            const rowCol = row.querySelector('.col-10.editing');
+            const pageBackground = document.querySelector('#editor-body');
+
+            const changeName = confirm("Would you like to change the tier name?");
+            if (changeName){
+                const newTierName = prompt("Enter a new tier name:");
+                if (newTierName !== null){
+                    firstCol.textContent = newTierName;
+                }
+            }
+
+            
+            const changeColor = confirm("Do you want to change tier background color?");
+            if (changeColor){
+                const newColor = prompt("Enter a new tier background color:", getComputedStyle(first).backgroundColor);
+                if (newColor !== null){
+                    first.style.backgroundColor = newColor;
+                    
+                }
+            }
+
+            const changeRowColor = confirm("Do you want to change row color?");
+            if (changeRowColor){
+                const newRowColor = prompt("Enter a new row color:", getComputedStyle(rowCol).backgroundColor);
+                if (newRowColor !== null){
+                    rowCol.style.backgroundColor = newRowColor;
+                    
+                }
+            }
+
+            const changeBackgroundColor = confirm("Do you want to change the page background color");
+            if (changeBackgroundColor){
+                const newBackgroundColor = prompt("Enter a new page background color:", getComputedStyle(rowCol).backgroundColor);
+                if (newBackgroundColor !== null){
+                    pageBackground.style.backgroundColor = newBackgroundColor;
+                    
+                }
+            }
+            
+        });
+    });
+
+}
+
     //Hides the menus when the user clicks a button from one
     function hideMenus(){
         let menus = qsa('.menu');
@@ -99,12 +150,16 @@
     function downloadProject(){
         id('dl-btn').addEventListener('click', function(e) {
             e.preventDefault();
-            const jsonString = JSON.stringify(getJSON(), null,2);
-            const blob = new Blob([jsonString], {type:'application/json'}); //converts the JSON to a downloadable form.
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download
-            link.click();
+            //bug here where images are not updated before being exported.
+            //uploadImages(); 
+            //setTimeout(async ()=>{
+                const jsonString = JSON.stringify(getJSON(), null,2);
+                const blob = new Blob([jsonString], {type:'application/json'}); //converts the JSON to a downloadable form.
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download;
+                link.click();
+            //},1000);
             id('projectExport').classList.add('hidden');
         });
     }
@@ -150,6 +205,11 @@
             let row = rows[i];
             let row_area = row.querySelector('.editing');
             //set row title/color
+            let tierText = row.querySelector('.first p');
+            if (json.rows[i] && json.rows[i].name){
+                tierText.textContent - json.rows[i].name;
+            }
+
             for(let j = 0; j < json.rows[i].items.length; j++) {
                 let new_img = document.createElement('img');
                 new_img.src = json.rows[i].items[j].src;

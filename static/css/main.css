@@ -1,3 +1,7 @@
+#editor-body{
+    background-color: #6c757d;
+}
+
 .first, .settings, .editing {
     height: 95px;
     border: 1px black solid;
@@ -5,12 +9,16 @@
 .first, .settings {
     background-color: darkgray;
 }
-.first {
 
-}
+
 .first p {
     padding-top: 50%;
 }
+
+.col, .first{
+    overflow:auto;
+}
+
 .settings { 
     
 } 
