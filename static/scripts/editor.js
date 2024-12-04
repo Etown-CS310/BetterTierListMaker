@@ -1,3 +1,4 @@
+import html2canvas from 'html2canvas';
 "use strict";
 (function(){
     window.addEventListener('load', init);
@@ -270,12 +271,17 @@
             .then(response => response.json())
             .then(data => {
                 console.log('Tierlist saved:', data);
-                id('saveProject').classList.add('hidden');
             })
             .catch(error => {
                 console.error('Error saving tierlist:', error);
                 alert('Failed to save tierlist');
             });
+            id('saveProject').classList.add('hidden');
+            html2canvas(document.querySelector("#capture")).then(canvas => {
+                document.body.appendChild(canvas);
+            });
+
+
         });
     }
 

@@ -58,6 +58,34 @@ app.get('/images/:id', (req, res) => {
 });
 app.use("/image", express.static(path.join(__dirname, "database/images")));
 
+app.get('/userpage', async function (req, res){
+    try{
+        let username = req.params.user;
+        if(username) {
+            let listSet = await getLists(username);
+            if(listSet){
+                return res.status(200).json(listSet);
+            }
+            else {
+                return res.status(400).json({msg: "No lists found for user"});
+            }
+        }
+        else {
+            return res.status(400).json({msg: "Missing valid user param"});
+        }
+    }catch(e){
+        return res.status(400).json(e);
+    }
+});
+
+async function getLists(username){
+    const db = await getDBConnection();
+    const query = "SELECT data, thumbnail FROM TierLists WHERE author = ?"; //curretly broken, as thumbnail is not in the table yet.
+    const answer = await db.get(query, [username]);
+    await db.close();
+    return answer;
+}
+
 //--------------------------------------------------------------------------------
 //                      Login and Registration Code
 //--------------------------------------------------------------------------------

@@ -1,0 +1,8 @@
+.flexbox {
+    display: flex;
+    align-items: center;
+}
+.thumbnail {
+    height: 400px;
+    width: 600px;
+}
