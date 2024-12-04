@@ -191,6 +191,7 @@
                 var jsonData = JSON.parse(event.target.result);
                 useJSON(jsonData);
             }catch(error){
+                console.error("Error parsing JSON file:", error);
                 alert("Error parsing JSON file"); //used to verify that the JSON is in the correct format
             }
         }
@@ -199,15 +200,30 @@
 
     //Used to parse through the users' uploaded JSON, and place images correctly
     function useJSON(json){
+        
         //set tier list title
         let rows = qsa('.container .row');
+        
+
         for(let i = 0; i < rows.length-1; i++){ 
             let row = rows[i];
             let row_area = row.querySelector('.editing');
+            let first = row.querySelector('.first')
             //set row title/color
             let tierText = row.querySelector('.first p');
+            let pageBackground = document.querySelector('#editor-body');
+            
             if (json.rows[i] && json.rows[i].name){
-                tierText.textContent - json.rows[i].name;
+                tierText.textContent = json.rows[i].name;
+            }
+            if (json.rows[i].tierColor) {
+                first.style.backgroundColor = json.rows[i].tierColor;
+            }
+            if (json.rows[i].rowColor) {
+                row_area.style.backgroundColor = json.rows[i].rowColor;
+            }
+            if (json.pageBackground) {
+                pageBackground.style.backgroundColor = json.pageBackground;
             }
 
             for(let j = 0; j < json.rows[i].items.length; j++) {
@@ -272,8 +288,10 @@
             'title' : title,
             'author' : author,
             'font': font,
+            'pageBackground': getColor(id('editor-body')),
             'rows': [] 
         };
+        
         let rows = qsa('.container .row');
         //iterate over rows
         for(let i = 0; i < rows.length-1; i++){ //rows.length -1 because the last row contains the buttons.
@@ -282,8 +300,9 @@
             let j;
             //create temp JSON file to append back to projectJSON
             let rowJSON = {
-                'name': row.querySelector('.first').textContent || "", //error here
-                'color': getColor(row.querySelector('.first')),
+                'name': row.querySelector('.first p').textContent || "", //error here
+                'tierColor': getColor(row.querySelector('.first')),
+                'rowColor': getColor(row.querySelector('.col-10.editing')),
                 'items': []
             };
             //iterate through each image in that row, and add it to JSON
@@ -292,6 +311,7 @@
                     'src': cells[j].src,
                     'alt': cells[j].alt || "",
                     'description': cells[j].title
+
                 });
             }
             //append row to projectJSON
