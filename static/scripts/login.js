@@ -34,7 +34,7 @@
                     console.log("Login successful");
                     id('message').textContent = data.message;
                     
-                    
+                    console.log("Logged in: ", data.username);
                     // Store username in session storage and redirect
                     window.sessionStorage.setItem('username', data.username);
                     location.assign('/user');  // Redirect to /user page

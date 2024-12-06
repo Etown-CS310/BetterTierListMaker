@@ -7,9 +7,9 @@
     }
 
     function getLists(){
-        let base_url = "http//localhost:8080/userpage?";
+        let base_url = "http://localhost:8080/userpage/";
         let user = window.sessionStorage.getItem("username");
-        let url = base_url + "user=" + user;
+        let url = base_url + user;
         fetch(url)
         .then(checkStatus)
         .then(postLists)
@@ -17,16 +17,30 @@
     }
 
     function postLists(listJson){
-        let box = document.createElement('div');
-        box.classList.add('flexbox');
-        let thumbnail = document.createElement('img');
-        thumbnail.src = listJson.thumbnail;
-        box.appendChild(thumbnail);
-        let link = document.createElement('a');
-        link.textContent = listJson.data.title;
-        link.href = "/editor.html"; //make it call the import function as well.
-        box.appendChild(link);
-        document.querySelector('.listarea').appendChild(box);    
+        console.log(listJson);
+        if (!listJson || (Array.isArray(listJson) && listJson.length === 0)) {
+            document.querySelector('.listarea').innerHTML = 'No lists available.';
+            return;
+        }
+        listJson.forEach((list) => {
+            let box = document.createElement('div');
+            box.classList.add('flexbox');
+            let thumbnail = document.createElement('img');
+            thumbnail.src = list.thumbnail;
+            box.appendChild(thumbnail);
+            fetch("http://localhost:8080/get-json/" + list.data)
+            .then(checkStatus)
+            //.then((response) => {response.json()})
+            .then((data) => {
+                let link = document.createElement('a');
+                link.textContent = data.title;
+                link.href = "/editor.html"; //make it call the import function as well.
+                box.appendChild(link);
+                document.querySelector('.listarea').appendChild(box);
+            })
+            .catch((e)=>{console.log(e)});
+        });
+            
     }
 
     /**

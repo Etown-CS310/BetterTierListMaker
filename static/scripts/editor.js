@@ -1,7 +1,6 @@
-import html2canvas from 'html2canvas';
 "use strict";
 (function(){
-    window.addEventListener('load', init);
+    window.addEventListener('load', init); 
     
     function init() {
         hideMenus();
@@ -277,8 +276,26 @@ import html2canvas from 'html2canvas';
                 alert('Failed to save tierlist');
             });
             id('saveProject').classList.add('hidden');
+            
+
             html2canvas(document.querySelector("#capture")).then(canvas => {
-                document.body.appendChild(canvas);
+                const formData = new FormData();
+                formData.append("key",jsonString);
+                canvas.toBlob(blob => {
+                    formData.append("thumbnail", blob, "image.jpg");
+                    fetch('http://localhost:8080/thumb-upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(checkStatus)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Thumbnail saved: ', data);
+                    })
+                    .catch(e => {
+                        console.log("Error Uploading Thumbnail: ", e);
+                    });
+                }, 'image/jpeg');
             });
 
 
