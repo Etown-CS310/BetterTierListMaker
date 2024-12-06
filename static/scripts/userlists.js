@@ -26,15 +26,21 @@
             let box = document.createElement('div');
             box.classList.add('flexbox');
             let thumbnail = document.createElement('img');
-            thumbnail.src = list.thumbnail;
+            let imgsrc = "http://localhost:8080/thumbnail/" + list.thumbnail;
+            thumbnail.src = imgsrc;
             box.appendChild(thumbnail);
             fetch("http://localhost:8080/get-json/" + list.data)
             .then(checkStatus)
             //.then((response) => {response.json()})
             .then((data) => {
                 let link = document.createElement('a');
-                link.textContent = data.title;
-                link.href = "/editor.html"; //make it call the import function as well.
+                link.textContent = data.title ? data.title : "List";
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    sessionStorage.setItem('from_link', 1);
+                    sessionStorage.setItem('jsonInfo', JSON.stringify(data));
+                    window.location.href = 'editor.html';
+                });
                 box.appendChild(link);
                 document.querySelector('.listarea').appendChild(box);
             })

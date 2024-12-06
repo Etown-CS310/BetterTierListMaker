@@ -10,55 +10,61 @@
             showMenu(e.target.id)})});
     
 
-    const settings = qsa('.settings img');
-    settings.forEach(icon =>{
-        icon.addEventListener('click', function(){
-            const row = this.closest('.row');
-            const firstCol = row.querySelector('.first p');
-            const first = row.querySelector('.first');
-            const rowCol = row.querySelector('.col-10.editing');
-            const pageBackground = document.querySelector('#editor-body');
+        const settings = qsa('.settings img');
+        settings.forEach(icon =>{
+            icon.addEventListener('click', function(){
+                const row = this.closest('.row');
+                const firstCol = row.querySelector('.first p');
+                const first = row.querySelector('.first');
+                const rowCol = row.querySelector('.col-10.editing');
+                const pageBackground = document.querySelector('#editor-body');
 
-            const changeName = confirm("Would you like to change the tier name?");
-            if (changeName){
-                const newTierName = prompt("Enter a new tier name:");
-                if (newTierName !== null){
-                    firstCol.textContent = newTierName;
+                const changeName = confirm("Would you like to change the tier name?");
+                if (changeName){
+                    const newTierName = prompt("Enter a new tier name:");
+                    if (newTierName !== null){
+                        firstCol.textContent = newTierName;
+                    }
                 }
-            }
 
-            
-            const changeColor = confirm("Do you want to change tier background color?");
-            if (changeColor){
-                const newColor = prompt("Enter a new tier background color:", getComputedStyle(first).backgroundColor);
-                if (newColor !== null){
-                    first.style.backgroundColor = newColor;
-                    
+                
+                const changeColor = confirm("Do you want to change tier background color?");
+                if (changeColor){
+                    const newColor = prompt("Enter a new tier background color:", getComputedStyle(first).backgroundColor);
+                    if (newColor !== null){
+                        first.style.backgroundColor = newColor;
+                        
+                    }
                 }
-            }
 
-            const changeRowColor = confirm("Do you want to change row color?");
-            if (changeRowColor){
-                const newRowColor = prompt("Enter a new row color:", getComputedStyle(rowCol).backgroundColor);
-                if (newRowColor !== null){
-                    rowCol.style.backgroundColor = newRowColor;
-                    
+                const changeRowColor = confirm("Do you want to change row color?");
+                if (changeRowColor){
+                    const newRowColor = prompt("Enter a new row color:", getComputedStyle(rowCol).backgroundColor);
+                    if (newRowColor !== null){
+                        rowCol.style.backgroundColor = newRowColor;
+                        
+                    }
                 }
-            }
 
-            const changeBackgroundColor = confirm("Do you want to change the page background color");
-            if (changeBackgroundColor){
-                const newBackgroundColor = prompt("Enter a new page background color:", getComputedStyle(rowCol).backgroundColor);
-                if (newBackgroundColor !== null){
-                    pageBackground.style.backgroundColor = newBackgroundColor;
-                    
+                const changeBackgroundColor = confirm("Do you want to change the page background color");
+                if (changeBackgroundColor){
+                    const newBackgroundColor = prompt("Enter a new page background color:", getComputedStyle(rowCol).backgroundColor);
+                    if (newBackgroundColor !== null){
+                        pageBackground.style.backgroundColor = newBackgroundColor;
+                        
+                    }
                 }
-            }
-            
+                
+            });
         });
-    });
-
-}
+        if(window.sessionStorage.getItem("from_link") == 1){
+            let jsonToUse = JSON.parse(window.sessionStorage.getItem("jsonInfo"));
+            console.log(jsonToUse);
+            useJSON(jsonToUse);
+            window.sessionStorage.removeItem("from_link");
+            window.sessionStorage.removeItem("jsonInfo");
+        }
+    }
 
     //Hides the menus when the user clicks a button from one
     function hideMenus(){
@@ -258,7 +264,7 @@
         id('pub-btn').addEventListener('click', function(e) {
             e.preventDefault();
             const jsonString = JSON.stringify(getJSON(), null, 2);
-            
+            let json_name;
             fetch('http://localhost:8080/save-tierlist', {
                 method: 'POST',
                 headers: {
@@ -270,6 +276,7 @@
             .then(response => response.json())
             .then(data => {
                 console.log('Tierlist saved:', data);
+                json_name = data.filename;
             })
             .catch(error => {
                 console.error('Error saving tierlist:', error);
@@ -280,7 +287,7 @@
 
             html2canvas(document.querySelector("#capture")).then(canvas => {
                 const formData = new FormData();
-                formData.append("key",jsonString);
+                formData.append("key",json_name);
                 canvas.toBlob(blob => {
                     formData.append("thumbnail", blob, "image.jpg");
                     fetch('http://localhost:8080/thumb-upload', {

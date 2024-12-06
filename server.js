@@ -120,7 +120,7 @@ app.get('/get-json/:json', async (req, res) => {
 app.post('/thumb-upload', tnupload.single('thumbnail'), async function (req, res) {
     try{
         //insert thumbnail into db
-        const imgurl = req.file.path;
+        const imgurl = path.basename(req.file.path);
         const key = req.body.key;
         await insertThumbnail(imgurl, key);
         return res.status(200).json({msg: "Success!"});
@@ -138,6 +138,13 @@ async function insertThumbnail(imgurl, key) {
     await db.close();
     return answer; 
 }
+
+app.get('/thumbnail/:id', (req, res) => {
+    const id = req.params.id;
+    const imgUrl = `http://localhost:{PORT}/thumbnail/${id}`;
+    res.status(200).json({src:imgUrl})
+});
+app.use("/thumbnail", express.static(path.join(__dirname, "database/thumbnails")));
 
 //--------------------------------------------------------------------------------
 //                      Login and Registration Code
