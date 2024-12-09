@@ -16,7 +16,6 @@ const app = express();
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({limit:'10mb'}));
-//app.use(multer().none());
 
 const PORT = process.env.PORT || 8080;
 const DB_PATH = "database/btlm.db";
@@ -53,15 +52,14 @@ app.use(express.static('static'));
 
 app.post('/img-upload', upload.array('images'), (req, res) => {
     try {
-        const filePaths = req.files.map((file) => {
+        const filePaths = req.files.map((file, index) => {
             const fileName = path.basename(file.path);
             return `http://localhost:8080/image/${fileName}`;
         });
-        res.status(200).json({files: filePaths});
-    }catch(error){
-        let msg = {"error" : "Error on the server. Please try again later."};
-        res.status(500);
-        res.type('json').send(msg);
+        res.status(200).json({ files: filePaths });
+    } catch (error) {
+        const msg = { "error": "Error on the server. Please try again later." };
+        res.status(500).type('json').send(msg);
     }
 });
 

@@ -390,7 +390,7 @@
             let cells = row.querySelectorAll('.editing img');
             let j;
             for(j = 0; j < cells.length; j++){
-                cells[j].src = response.files.reverse()[idx++];
+                cells[j].src = response.files[idx++];
             }
         }
     }
