@@ -152,6 +152,7 @@ app.use("/thumbnail", express.static(path.join(__dirname, "database/thumbnails")
 
 //Account Registration
 
+//Setting external environment variable as the secret
 const jwtSecret = process.env.JWT_SECRET;
 
 app.post('/register', async function (req, res){
@@ -192,7 +193,7 @@ app.post('/register', async function (req, res){
 
 app.post('/login', async function (req, res) {
     try {
-        res.clearCookie();
+        res.clearCookie(); //clears cookie to remove previous user information
         
 
         const username = req.body.username;
@@ -279,9 +280,11 @@ app.get('/user', (req, res) => {
     }
 });
 
+// Save TierList Information
 app.post('/save-tierlist', async (req, res) => {
     try {
 
+        //grabs the current logged in user's name and setting it as a const variable
         const token = req.cookies.my_cipher;
         const decoded = jwt.verify(token, jwtSecret); 
         const username = decoded.username;
@@ -289,15 +292,16 @@ app.post('/save-tierlist', async (req, res) => {
 
         
         const dirPath = path.join(__dirname, 'database', 'tierlists');
-        await fs.mkdir(dirPath, { recursive: true }); // this creates the tierlists directory is it does not exists.
+        await fs.mkdir(dirPath, { recursive: true }); // this creates the tier lists directory if it does not exists.
 
         const filename = `tierlist-${Date.now()}.json`;
         const filePath = path.join(dirPath, filename);
 
         await fs.writeFile(filePath, JSON.stringify(req.body, null, 2));
 
+        //inserts the tier list filename and the associated username to the TierLists table
         const db = await getDBConnection();
-        const insertSQL = "INSERT INTO TierLists (data, author) VALUES (?, ?)"; // there will be more values later.
+        const insertSQL = "INSERT INTO TierLists (data, author) VALUES (?, ?)";
         await db.run(insertSQL, [filename, username]);
         await db.close();
 
@@ -328,7 +332,7 @@ async function findUser(username){
     return user;
 }
 
-//Add user informaiton to database
+//Add user information to database
 
 async function insertUser(username, password_cipher){
     const db = await getDBConnection();

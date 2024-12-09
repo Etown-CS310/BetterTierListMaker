@@ -9,7 +9,7 @@
             e.preventDefault(); //used to prevent bootstrap from refreshing the page every time a click event happens.
             showMenu(e.target.id)})});
     
-
+        //Sets up the setting prompts to each gear icon
         const settings = qsa('.settings img');
         settings.forEach(icon =>{
             icon.addEventListener('click', function(){
@@ -18,7 +18,8 @@
                 const first = row.querySelector('.first');
                 const rowCol = row.querySelector('.col-10.editing');
                 const pageBackground = document.querySelector('#editor-body');
-
+                
+                //prompt for tier name
                 const changeName = confirm("Would you like to change the tier name?");
                 if (changeName){
                     const newTierName = prompt("Enter a new tier name:");
@@ -27,7 +28,7 @@
                     }
                 }
 
-                
+                //prompt for tier background color
                 const changeColor = confirm("Do you want to change tier background color?");
                 if (changeColor){
                     const newColor = prompt("Enter a new tier background color:", getComputedStyle(first).backgroundColor);
@@ -37,6 +38,7 @@
                     }
                 }
 
+                //prompt for row background color
                 const changeRowColor = confirm("Do you want to change row color?");
                 if (changeRowColor){
                     const newRowColor = prompt("Enter a new row color:", getComputedStyle(rowCol).backgroundColor);
@@ -46,6 +48,7 @@
                     }
                 }
 
+                //prompt for page background color
                 const changeBackgroundColor = confirm("Do you want to change the page background color");
                 if (changeBackgroundColor){
                     const newBackgroundColor = prompt("Enter a new page background color:", getComputedStyle(rowCol).backgroundColor);

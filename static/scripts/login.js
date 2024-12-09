@@ -2,9 +2,9 @@
 (function () {
     const BASE_URL = "http://localhost:8080";
 
-    window.addEventListener('load', initalize);
+    window.addEventListener('load', initialize);
 
-    function initalize() {
+    function initialize() {
         id('login-btn').addEventListener('click', loginFunction);  // Set up event listener for login
     }
 
