@@ -142,5 +142,22 @@
 }
 
 footer{
-    text-align: center;
+    display:-webkit-flex;
+    display:flex;
+    list-style-type:none;
+    padding:0;
+    justify-content:flex-end;
+}
+
+#github{
+    width: 50px;
+    display: inline;
+    margin-left:50%;
+    position: relative;
+    top:-3px;
+}
+
+#credit{
+    display: inline;
+    
 }
