@@ -106,6 +106,27 @@
     display:none;
 }
 
+#document{
+    background-color: white;
+    padding:50px;
+    margin:60px;
+    margin-top: 35px;
+    padding-top: 10px;
+}
+
+#how-to-use-header{
+    text-align: center;
+}
+
+#document li{
+    padding: 2px;
+}
 
 
-
+#guide-icon{
+    width: 46px;
+    position: relative;
+    top:-7px;
+    left:5px;
+    padding-left: 11px;
+}
