@@ -5,8 +5,7 @@ const fs = require('fs').promises;
 const express = require("express");
 const path = require("path");
 const multer = require("multer");
-const sqlite3 = require('sqlite3');
-const sqlite = require('sqlite');
+const mysql = require('mysql2/promise');
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -18,7 +17,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json({limit:'10mb'}));
 
 const PORT = process.env.PORT || 8080;
-const DB_PATH = "database/btlm.db";
+
+const pool = mysql.createPool({
+    host: "35.237.73.182",
+    user: "admin",
+    password: "P61083G*",
+    database: "btlm" // Replace with your actual database name
+});
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -91,11 +96,8 @@ app.get('/userpage/:user', async function (req, res) {
 });
 
 async function getLists(username){
-    const db = await getDBConnection();
-    const query = "SELECT data, thumbnail FROM TierLists WHERE author = ?"; //curretly broken, as thumbnail is not in the table yet.
-    const answer = await db.all(query, [username]);
-    await db.close();
-    return answer;
+    const [rows] = await pool.execute('SELECT data, thumbnail FROM TierLists WHERE author = ?', [username]);
+    return rows;
 }
 
 const jsonDirectory = path.join(__dirname, 'database/tierlists');
@@ -130,11 +132,8 @@ app.post('/thumb-upload', tnupload.single('thumbnail'), async function (req, res
 });
 
 async function insertThumbnail(imgurl, key) {
-    const db = await getDBConnection();
-    const insert = "UPDATE TierLists SET thumbnail = ? WHERE data = ?"; 
-    const answer = await db.run(insert, [imgurl, key]);
-    await db.close();
-    return answer; 
+    const [result] = await pool.execute('UPDATE TierLists SET thumbnail = ? WHERE data = ?', [imgurl, key]);
+    return result; 
 }
 
 app.get('/thumbnail/:id', (req, res) => {
@@ -164,7 +163,8 @@ app.post('/register', async function (req, res){
             });
         }
 
-        const user = await findUser(username);
+        const [rows] = await pool.execute('SELECT id, username, password FROM users WHERE username = ?', [username]);
+        const user = rows[0];
 
         if (user){
             return res.status(400).json({
@@ -172,8 +172,7 @@ app.post('/register', async function (req, res){
             });
         }
         const password_cipher = await bcrypt.hash(password, 10);
-        const result = await insertUser(username, password_cipher);
-
+        const [result] = await pool.execute('INSERT INTO users (username, password) VALUES (?, ?)', [username, password_cipher]);
         if (result) {
             return res.status(200).json({
                 message: "Account has been created successfully."
@@ -203,13 +202,14 @@ app.post('/login', async function (req, res) {
             });
         }
 
-        const user = await findUser(username);
+        const [rows] = await pool.execute('SELECT id, username, password FROM users WHERE username = ?', [username]);
+        const user = rows[0];
+
         if (!user) {
             return res.status(400).json({
                 message: "User not found."
             });
         }
-        
 
 // Authentication
 
