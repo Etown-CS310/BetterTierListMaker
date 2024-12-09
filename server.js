@@ -34,6 +34,20 @@ const upload = multer({
     storage,
     limits: {filesize: 5 * 1024 * 1024} //limits file size to 5mb. 
 });
+//thumbnail upload and storage
+const tnstorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "database/thumbnails/"); //directory for files
+    },
+    filename: (req, file, cb) => {
+        const suffix = Date.now() + "-" + Math.round(Math.random()*1e9); //creates random suffix for images
+        cb(null, suffix + path.extname(file.originalname));
+    }
+});
+const tnupload = multer({
+    storage: tnstorage,
+    limits: {fileSize: 5 * 1024 * 1024} //limits file size to 5mb. 
+});
 
 app.use(express.static('static'));
 
@@ -57,6 +71,80 @@ app.get('/images/:id', (req, res) => {
     res.status(200).json({src:imgUrl})
 });
 app.use("/image", express.static(path.join(__dirname, "database/images")));
+
+app.get('/userpage/:user', async function (req, res) {
+    try{
+        let username = req.params.user;
+        if(username) {
+            let listSet = await getLists(username);
+            if(listSet){
+                return res.status(200).json(listSet);
+            }
+            else {
+                return res.status(400).json({msg: "No lists found for user"});
+            }
+        }
+        else {
+            return res.status(400).json({msg: "Missing valid user param"});
+        }
+    }catch(e){
+        return res.status(400).json(e);
+    }
+});
+
+async function getLists(username){
+    const db = await getDBConnection();
+    const query = "SELECT data, thumbnail FROM TierLists WHERE author = ?"; //curretly broken, as thumbnail is not in the table yet.
+    const answer = await db.all(query, [username]);
+    await db.close();
+    return answer;
+}
+
+const jsonDirectory = path.join(__dirname, 'database/tierlists');
+
+app.get('/get-json/:json', async (req, res) => {
+    const filename = req.params.json;
+    const filePath = path.join(jsonDirectory, filename); 
+    try {
+        const data = await fs.readFile(filePath, 'utf8');
+        const jsonData = JSON.parse(data);
+        res.status(200).json(jsonData);
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            return res.status(404).json({ message: 'File not found' });
+        }
+        return res.status(500).json({ message: 'Error reading or parsing the file' });
+    }
+});
+
+app.post('/thumb-upload', tnupload.single('thumbnail'), async function (req, res) {
+    try{
+        //insert thumbnail into db
+        const imgurl = path.basename(req.file.path);
+        const key = req.body.key;
+        await insertThumbnail(imgurl, key);
+        return res.status(200).json({msg: "Success!"});
+    }catch(e){
+        let msg = {"error" : "Error on the server. Please try again later."};
+        res.status(500);
+        return res.type('json').send(msg);
+    }
+});
+
+async function insertThumbnail(imgurl, key) {
+    const db = await getDBConnection();
+    const insert = "UPDATE TierLists SET thumbnail = ? WHERE data = ?"; 
+    const answer = await db.run(insert, [imgurl, key]);
+    await db.close();
+    return answer; 
+}
+
+app.get('/thumbnail/:id', (req, res) => {
+    const id = req.params.id;
+    const imgUrl = `http://localhost:{PORT}/thumbnail/${id}`;
+    res.status(200).json({src:imgUrl})
+});
+app.use("/thumbnail", express.static(path.join(__dirname, "database/thumbnails")));
 
 //--------------------------------------------------------------------------------
 //                      Login and Registration Code
@@ -142,7 +230,8 @@ app.post('/login', async function (req, res) {
             });
 
             res.status(200).json({
-                'message': "Login successful"
+                'message': "Login successful",
+                username: username
             });
         }
         else{
@@ -202,7 +291,7 @@ app.post('/save-tierlist', async (req, res) => {
         const dirPath = path.join(__dirname, 'database', 'tierlists');
         await fs.mkdir(dirPath, { recursive: true }); // this creates the tierlists directory is it does not exists.
 
-        const filename = `tierlist_${Date.now()}.json`;
+        const filename = `tierlist-${Date.now()}.json`;
         const filePath = path.join(dirPath, filename);
 
         await fs.writeFile(filePath, JSON.stringify(req.body, null, 2));

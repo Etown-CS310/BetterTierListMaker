@@ -24,6 +24,8 @@
         });
     </script>
     <link href ="css/main.css" rel = "stylesheet">
+    <!-- html2canvas import -->
+    <script src = "https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
     <script src = "scripts/editor.js"></script>
 </head>
 <body id="editor-body">
@@ -36,7 +38,7 @@
     </header>
     <main>
         <!-- editing pane goes here-->
-        <div class="container text-center position-relative">
+        <div id = 'capture' class="container text-center position-relative">
             <div id = "imageImport" class = "menu">
                 <button class="close-btn">&times;</button>
                 <form>
