@@ -58,20 +58,6 @@ const tnupload = multer({
 });
 
 app.use(express.static('static'));
-/*
-app.post('/img-upload', upload.array('images'), (req, res) => {
-    try {
-        const filePaths = req.files.map((file, index) => {
-            const fileName = path.basename(file.path);
-            return `http://localhost:8080/image/${fileName}`;
-        });
-        res.status(200).json({ files: filePaths });
-    } catch (error) {
-        const msg = { "error": "Error on the server. Please try again later." };
-        res.status(500).type('json').send(msg);
-    }
-});
-*/
 
 app.post('/img-upload', upload.array('images'), async (req, res) => {
   try {
@@ -96,14 +82,6 @@ app.post('/img-upload', upload.array('images'), async (req, res) => {
     res.status(500).json({ message: 'Error uploading images' });
   }
 });
-
-/*
-app.get('/images/:id', (req, res) => {
-    const id = req.params.id;
-    const imgUrl = `http://localhost:{PORT}/image/${id}`;
-    res.status(200).json({src:imgUrl})
-});
-*/
 
 app.get('/images/:id', (req, res) => {
   const id = req.params.id;
@@ -154,21 +132,6 @@ app.get('/get-json/:json', async (req, res) => {
         return res.status(500).json({ message: 'Error reading or parsing the file' });
     }
 });
-/*
-app.post('/thumb-upload', tnupload.single('thumbnail'), async function (req, res) {
-    try{
-        //insert thumbnail into db
-        const imgurl = path.basename(req.file.path);
-        const key = req.body.key;
-        await insertThumbnail(imgurl, key);
-        return res.status(200).json({msg: "Success!"});
-    }catch(e){
-        let msg = {"error" : "Error on the server. Please try again later."};
-        res.status(500);
-        return res.type('json').send(msg);
-    }
-});
-*/
 
 app.post('/thumb-upload', tnupload.single('thumbnail'), async (req, res) => {
   try {
@@ -194,13 +157,6 @@ async function insertThumbnail(imgurl, key) {
     const [result] = await pool.execute('UPDATE TierLists SET thumbnail = ? WHERE data = ?', [imgurl, key]);
     return result; 
 }
-/*
-app.get('/thumbnail/:id', (req, res) => {
-    const id = req.params.id;
-    const imgUrl = `http://localhost:{PORT}/thumbnail/${id}`;
-    res.status(200).json({src:imgUrl})
-});
-*/
 
 app.get('/thumbnail/:id', (req, res) => {
   const id = req.params.id;
