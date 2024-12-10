@@ -10,6 +10,7 @@
   "author": "kevin barbieri and phillip goldberg",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/storage": "^7.14.0",
     "and": "^0.0.3",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",

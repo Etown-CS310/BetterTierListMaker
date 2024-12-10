@@ -18,6 +18,10 @@ app.use(express.json({limit:'10mb'}));
 
 const PORT = process.env.PORT || 8080;
 
+const { Storage } = require('@google-cloud/storage');
+
+const bucketName = 'bettertierlistmaker2.appspot.com';
+
 const pool = mysql.createPool({
     host: "35.237.73.182",
     user: "admin",
@@ -54,7 +58,7 @@ const tnupload = multer({
 });
 
 app.use(express.static('static'));
-
+/*
 app.post('/img-upload', upload.array('images'), (req, res) => {
     try {
         const filePaths = req.files.map((file, index) => {
@@ -67,12 +71,46 @@ app.post('/img-upload', upload.array('images'), (req, res) => {
         res.status(500).type('json').send(msg);
     }
 });
+*/
 
+app.post('/img-upload', upload.array('images'), async (req, res) => {
+  try {
+    const bucketPath = bucketName + '/database/images';
+    const filePaths = [];
+    for (const file of req.files) {
+      const fileName = file.originalname;
+      const blob = storage.bucket(bucketPath).file(fileName);
+      
+      // Upload the image to the bucket
+      await blob.upload(file.path);
+      
+      // Build the image URL
+      const imageUrl = `https://storage.googleapis.com/${bucketPath}/${fileName}`;
+      
+      filePaths.push(imageUrl);
+    }
+    
+    res.status(200).json({ files: filePaths });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error uploading images' });
+  }
+});
+
+/*
 app.get('/images/:id', (req, res) => {
     const id = req.params.id;
     const imgUrl = `http://localhost:{PORT}/image/${id}`;
     res.status(200).json({src:imgUrl})
 });
+*/
+
+app.get('/images/:id', (req, res) => {
+  const id = req.params.id;
+  const imageUrl = `https://storage.googleapis.com/${bucketName}/${id}`;
+  res.status(200).json({ src: imageUrl });
+});
+
 app.use("/image", express.static(path.join(__dirname, "database/images")));
 
 app.get('/userpage/:user', async function (req, res) {
@@ -116,7 +154,7 @@ app.get('/get-json/:json', async (req, res) => {
         return res.status(500).json({ message: 'Error reading or parsing the file' });
     }
 });
-
+/*
 app.post('/thumb-upload', tnupload.single('thumbnail'), async function (req, res) {
     try{
         //insert thumbnail into db
@@ -130,17 +168,46 @@ app.post('/thumb-upload', tnupload.single('thumbnail'), async function (req, res
         return res.type('json').send(msg);
     }
 });
+*/
+
+app.post('/thumb-upload', tnupload.single('thumbnail'), async (req, res) => {
+  try {
+    const bucketPath = bucketName + '/database/thumbnails'; 
+    const fileName = req.file.originalname;
+    const blob = storage.bucket(bucketName).file(fileName);
+    
+    await blob.upload(req.file.path);
+    
+    const imageUrl = `https://storage.googleapis.com/${bucketPath}/${fileName}`;
+    
+    await insertThumbnail(imageUrl, req.body.key);
+    
+    res.status(200).json({ msg: "Success!" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error uploading thumbnail' });
+  }
+});
+
 
 async function insertThumbnail(imgurl, key) {
     const [result] = await pool.execute('UPDATE TierLists SET thumbnail = ? WHERE data = ?', [imgurl, key]);
     return result; 
 }
-
+/*
 app.get('/thumbnail/:id', (req, res) => {
     const id = req.params.id;
     const imgUrl = `http://localhost:{PORT}/thumbnail/${id}`;
     res.status(200).json({src:imgUrl})
 });
+*/
+
+app.get('/thumbnail/:id', (req, res) => {
+  const id = req.params.id;
+  const imageUrl = `https://storage.googleapis.com/${bucketName}/${id}`;
+  res.status(200).json({ src: imageUrl });
+});
+
 app.use("/thumbnail", express.static(path.join(__dirname, "database/thumbnails")));
 
 //--------------------------------------------------------------------------------
