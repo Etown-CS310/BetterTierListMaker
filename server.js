@@ -5,10 +5,14 @@ const fs = require('fs').promises;
 const express = require("express");
 const path = require("path");
 const multer = require("multer");
-const mysql = require('mysql2/promise');
+const mysql = require('mysql2/promise');  // Updated to use mysql2/promise
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
+
+
+// const bucketNameThumbs = '';
 
 
 const app = express();
@@ -19,69 +23,89 @@ app.use(express.json({limit:'10mb'}));
 const PORT = process.env.PORT || 8080;
 
 const { Storage } = require('@google-cloud/storage');
+// const storage = new Storage({ keyFilename: '' }); this line is required to deploy and requires the json file provided by Google
+// it will be left blank for having it on GitHub
+
 
 const bucketName = 'bettertierlistmaker2.appspot.com';
+//const bucketNameImages = bucketName + "/database/images";
+//const bucketImage = storage.bucket(bucketNameImages);
 
+//information for the MySQL pool will be left blank for GitHub
 const pool = mysql.createPool({
-    host: "35.237.73.182",
-    user: "admin",
-    password: "P61083G*",
-    database: "btlm" // Replace with your actual database name
+    host: "",
+    user: "",
+    password: "",
+    database: "btlm" 
 });
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "database/images/"); //directory for files
-    },
-    filename: (req, file, cb) => {
-        const suffix = Date.now() + "-" + Math.round(Math.random()*1e9); //creates random suffix for images
-        cb(null, suffix + path.extname(file.originalname));
-    }
-});
+
 const upload = multer({
-    storage,
-    limits: {filesize: 5 * 1024 * 1024} //limits file size to 5mb. 
-});
+    storage: multer.memoryStorage(), // Store in memory before uploading to GCS
+    limits: { fileSize: 5 * 1024 * 1024 }, // Optional file size limit
+  });
+
 //thumbnail upload and storage
-const tnstorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "database/thumbnails/"); //directory for files
-    },
-    filename: (req, file, cb) => {
-        const suffix = Date.now() + "-" + Math.round(Math.random()*1e9); //creates random suffix for images
-        cb(null, suffix + path.extname(file.originalname));
-    }
-});
 const tnupload = multer({
-    storage: tnstorage,
+    storage: multer.memoryStorage(),
     limits: {fileSize: 5 * 1024 * 1024} //limits file size to 5mb. 
 });
 
 app.use(express.static('static'));
 
+
 app.post('/img-upload', upload.array('images'), async (req, res) => {
-  try {
-    const bucketPath = bucketName + '/database/images';
-    const filePaths = [];
-    for (const file of req.files) {
-      const fileName = file.originalname;
-      const blob = storage.bucket(bucketPath).file(fileName);
-      
-      // Upload the image to the bucket
-      await blob.upload(file.path);
-      
-      // Build the image URL
-      const imageUrl = `https://storage.googleapis.com/${bucketPath}/${fileName}`;
-      
-      filePaths.push(imageUrl);
+    try {
+      const filePaths = [];
+  
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: 'No images uploaded' });
+      }
+  
+      // Create an array of promises for file uploads
+      const uploadPromises = req.files.map((file, index) => {
+        return new Promise((resolve, reject) => {
+          const { originalname, buffer } = file;
+          const newfilename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
+          const destination = `database/images/${newfilename}`;
+  
+          // Upload the file to GCS
+          const bucket = storage.bucket(bucketName);
+          const blob = bucket.file(destination);
+          const blobStream = blob.createWriteStream({
+            resumable: false,
+            contentType: file.mimetype, // Set the correct MIME type
+          });
+  
+          blobStream.on('finish', () => {
+            const fileUrl = `https://storage.googleapis.com/${bucketName}/${destination}`;
+            filePaths.push(fileUrl);
+            resolve(); // Resolve the promise when finished
+          });
+  
+          blobStream.on('error', (err) => {
+            console.error('Error uploading file:', err);
+            reject(err); // Reject the promise on error
+          });
+  
+          blobStream.end(buffer); // End the stream and start the upload
+        });
+      });
+  
+      // Wait for all uploads to complete
+      await Promise.all(uploadPromises);
+  
+      // Send the response after all uploads have finished
+      res.status(200).json({
+        message: 'Files uploaded successfully!',
+        files: filePaths
+      });
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      res.status(500).json({ message: 'Error uploading images' });
     }
-    
-    res.status(200).json({ files: filePaths });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error uploading images' });
-  }
-});
+  });
+
 
 app.get('/images/:id', (req, res) => {
   const id = req.params.id;
@@ -120,10 +144,12 @@ const jsonDirectory = path.join(__dirname, 'database/tierlists');
 
 app.get('/get-json/:json', async (req, res) => {
     const filename = req.params.json;
-    const filePath = path.join(jsonDirectory, filename); 
+    const destination = `database/tierlists/${filename}`; 
     try {
-        const data = await fs.readFile(filePath, 'utf8');
-        const jsonData = JSON.parse(data);
+        const bucket = storage.bucket(bucketName);
+        const file = bucket.file(destination);
+        const [data] = await file.download();
+        const jsonData = JSON.parse(data.toString('utf8'));
         res.status(200).json(jsonData);
     } catch (err) {
         if (err.code === 'ENOENT') {
@@ -133,6 +159,46 @@ app.get('/get-json/:json', async (req, res) => {
     }
 });
 
+app.post('/thumb-upload', tnupload.single('thumbnail'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No image uploaded' });
+      }
+  
+      const { originalname, buffer } = req.file;
+      const newfilename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(originalname)}`;
+      const destination = `database/thumbnails/${newfilename}`;
+  
+      // Upload the file to GCS
+      const bucket = storage.bucket(bucketName);
+      const blob = bucket.file(destination);
+  
+      await new Promise((resolve, reject) => {
+        const blobStream = blob.createWriteStream({
+          resumable: false,
+          contentType: req.file.mimetype, // Set correct MIME type
+        });
+  
+        blobStream.on('finish', resolve); // Resolve when upload is complete
+        blobStream.on('error', reject);  // Reject on error
+  
+        blobStream.end(buffer); // End the stream and start the upload
+      });
+  
+      // Generate the public URL for the uploaded file
+      const fileUrl = `https://storage.googleapis.com/${bucketName}/${destination}`;
+      await insertThumbnail(fileUrl, req.body.key);
+      // Send the response with the uploaded file URL
+      res.status(200).json({
+        message: 'File uploaded successfully!',
+        file: fileUrl
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      res.status(500).json({ message: 'Error uploading image' });
+    }
+  });
+/*
 app.post('/thumb-upload', tnupload.single('thumbnail'), async (req, res) => {
   try {
     const bucketPath = bucketName + '/database/thumbnails'; 
@@ -151,7 +217,7 @@ app.post('/thumb-upload', tnupload.single('thumbnail'), async (req, res) => {
     res.status(500).json({ message: 'Error uploading thumbnail' });
   }
 });
-
+*/
 
 async function insertThumbnail(imgurl, key) {
     const [result] = await pool.execute('UPDATE TierLists SET thumbnail = ? WHERE data = ?', [imgurl, key]);
@@ -216,6 +282,7 @@ app.post('/login', async function (req, res) {
         res.clearCookie(); //clears cookie to remove previous user information
         
 
+
         const username = req.body.username;
         const password = req.body.password;
 
@@ -270,8 +337,6 @@ app.post('/login', async function (req, res) {
         }
     });
 
-// Render users page
-
 app.get('/user', (req, res) => {
 
     const token = req.cookies.my_cipher;
@@ -316,66 +381,36 @@ app.post('/save-tierlist', async (req, res) => {
         await fs.mkdir(dirPath, { recursive: true }); // this creates the tier lists directory if it does not exists.
 
         const filename = `tierlist-${Date.now()}.json`;
-        const filePath = path.join(dirPath, filename);
+        const destination = `database/tierlists/${filename}`;
 
-        await fs.writeFile(filePath, JSON.stringify(req.body, null, 2));
+        const bucket = storage.bucket(bucketName);
+        const file = bucket.file(destination);
+        await file.save(JSON.stringify(req.body, null, 2), {
+            contentType: 'application/json', // Set appropriate content type
+        });
 
-        //inserts the tier list filename and the associated username to the TierLists table
-        const db = await getDBConnection();
-        const insertSQL = "INSERT INTO TierLists (data, author) VALUES (?, ?)";
-        await db.run(insertSQL, [filename, username]);
-        await db.close();
+        // Optionally make the file public or generate a signed URL
+        const publicUrl = `https://storage.googleapis.com/${bucketName}/${destination}`;
 
-        res.json({                                   
-            success: true,                                                
-            message: 'Tierlist saved successfully',     
+        // Insert the tierlist information into the database
+        const [result] = await pool.execute('INSERT INTO TierLists (data, author) VALUES (?, ?)', [filename, username]);
+
+        res.json({
+            success: true,
+            message: 'Tierlist saved successfully',
             filename: filename,
-            username: username                          
-        });                                             
+            username: username,
+            url: publicUrl, // Optional: return the public URL
+        });                                           
     } catch (error) {                                   
         console.error('Error saving tierlist:', error); 
         res.status(500).json({                          
             success: false,                             
             message: 'Failed to save tierlist',         
-            error: error.message                     
+            error: error.message                      
         });
     }
 });
-
-//Find User in Database
-
-async function findUser(username){
-    const db = await getDBConnection();
-    const query = "SELECT id, username, password FROM users WHERE username = ?";
-    const user = await db.get(query, [username]);
-
-    await db.close();
-    return user;
-}
-
-//Add user information to database
-
-async function insertUser(username, password_cipher){
-    const db = await getDBConnection();
-    const insertSQL = "insert into users (username, password)" + "values (?,?)";
-    const result = await db.run(insertSQL, [username, password_cipher]);
-    console.log(result);
-    const user = await findUser(username);
-    
-    await db.close();
-    return user;
-}
-
-//Setup Database Connection
-
-async function getDBConnection(){
-    const db = await sqlite.open({
-        filename: DB_PATH,
-        driver: sqlite3.Database
-    });
-
-    return db;
-}
 
 app.listen(PORT);
 console.log('Server started at http://localhost:' + PORT);

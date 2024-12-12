@@ -1,6 +1,8 @@
 "use strict";
 (function(){
     window.addEventListener('load', init); 
+
+    const BASE_URL="https://bettertierlistmaker2.ue.r.appspot.com/"
     
     function init() {
         hideMenus();
@@ -268,7 +270,7 @@
             e.preventDefault();
             const jsonString = JSON.stringify(getJSON(), null, 2);
             let json_name;
-            fetch('http://localhost:8080/save-tierlist', {
+            fetch(BASE_URL + 'save-tierlist', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -293,7 +295,7 @@
                 formData.append("key",json_name);
                 canvas.toBlob(blob => {
                     formData.append("thumbnail", blob, "image.jpg");
-                    fetch('http://localhost:8080/thumb-upload', {
+                    fetch(BASE_URL + 'thumb-upload', {
                         method: 'POST',
                         body: formData
                     })
@@ -367,7 +369,7 @@
         //Timeout is set to give the images time to blob.
         setTimeout(async() => {
             try{
-                const response = await fetch("http://localhost:8080/img-upload", {
+                const response = await fetch(BASE_URL + 'img-upload', {
                     method: "POST",
                     body: formData
                 });
@@ -381,6 +383,10 @@
 
     //Once the response is recieved with new src links for images, update the images on the list to the new src
     function updateImages(response) {
+        if (!response.files || response.files.length === 0) {
+            console.error("No files returned from the server.");
+            return; // Exit the function if no files are available
+        }
         //changes the src for images on the page to the server's location.
         let rows = qsa('.container .row');
         //iterate over rows

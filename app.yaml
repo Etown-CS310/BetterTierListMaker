@@ -1,17 +1,24 @@
 runtime: nodejs20
 service: default
 env: standard
+
+env_variables:
+  # JWT_SECRET: ""  This line is for the login authentican, will be left blank for GitHub
+  # GOOGLE_APPLICATION_CREDENTIALS: "" This line is for json credentials that is used to deploy, will be left blank for GitHub
+
 handlers:
-- url: /
-  static_files: index.html
-  upload: index.html
+  # Serve static files from the "static" directory
+  - url: /static
+    static_dir: static
 
-# - url: /style.css
-#   static_files: style.css
-#   upload: style.css
+  # Serve uploaded images from the "database/images" directory
+  - url: /image
+    static_dir: database/images
 
-# - url: /main.js
-#   static_files: main.js
-#   upload: mains.js
+  # Serve uploaded thumbnails from the "database/thumbnails" directory
+  - url: /thumbnail
+    static_dir: database/thumbnails
 
-
+  # Route all other requests to the Node.js app
+  - url: /.*
+    script: auto

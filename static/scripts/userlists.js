@@ -7,7 +7,7 @@
     }
 
     function getLists(){
-        let base_url = "http://localhost:8080/userpage/";
+        let base_url = "https://bettertierlistmaker2.ue.r.appspot.com/userpage/";
         let user = window.sessionStorage.getItem("username");
         let url = base_url + user;
         fetch(url)
@@ -26,10 +26,10 @@
             let box = document.createElement('div');
             box.classList.add('flexbox');
             let thumbnail = document.createElement('img');
-            let imgsrc = "http://localhost:8080/thumbnail/" + list.thumbnail;
+            let imgsrc = "https://bettertierlistmaker2.ue.r.appspot.com/thumbnail/" + list.thumbnail;
             thumbnail.src = imgsrc;
             box.appendChild(thumbnail);
-            fetch("http://localhost:8080/get-json/" + list.data)
+            fetch("https://bettertierlistmaker2.ue.r.appspot.com/get-json/" + list.data)
             .then(checkStatus)
             //.then((response) => {response.json()})
             .then((data) => {

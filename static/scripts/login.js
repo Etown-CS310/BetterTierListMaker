@@ -1,6 +1,6 @@
 "use strict";
 (function () {
-    const BASE_URL = "http://localhost:8080";
+    const BASE_URL = "https://bettertierlistmaker2.ue.r.appspot.com";
 
     window.addEventListener('load', initialize);
 
